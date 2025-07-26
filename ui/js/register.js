@@ -36,7 +36,7 @@ $(document).ready(function () {
         const password = $('#password').val();
         const age = $('#age').val();
         const gender = $('#age').val();
-        const location = $('#home location').val();
+        const address = $('#home address').val();
 
 
         $.ajax({
@@ -45,11 +45,11 @@ $(document).ready(function () {
             headers: {
                 'Content-Type': 'application/json'
             },
-            data: JSON.stringify({ name, email, password, age, gender, location }),
+            data: JSON.stringify({ name, email, password, age, gender, address }),
             xhrFields: { withCredentials: true },
             success: function (data) {
                 console.log('Registration successful');
-                postFB(`A new member has joined us! Welcome ${username}!`);
+                postFB(`A new member has joined us! Welcome ${name}!`);
                 window.location.href = 'login.html';
             },
             error: function (jqXHR) {
