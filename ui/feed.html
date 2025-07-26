@@ -3,63 +3,44 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Connectify - Feed</title>
-  <link rel="stylesheet" href="style-feed.css" />
+  <title>Feed</title>
+  <link rel="stylesheet" href="./css/style-feed.css" />
 </head>
 <body>
-  <div class="navbar">
-    <h2>Connectify</h2>
+  <div class="navbar">Connectify</div>
+  <div class="search-bar">
+    <input type="text" id="searchInput" placeholder="Search friends, groups, or posts..." />
+    <button onclick="performSearch()">🔍</button>
+  </div>
+  <div class="container">
+    <aside class="sidebar">
+      <h2>Friends</h2>
+      <ul id="friendList"></ul>
+
+      <h2>Groups</h2>
+      <ul id="groupList"></ul>
+    </aside>
+
+
+    <main class="feed">
+      <button onclick="openPostModal()">➕ New Post</button>
+      <div id="posts"></div>
+    </main>
   </div>
 
-  <div class="content">
-    <section class="create-post">
-      <h3>Create a Post</h3>
-      <form onsubmit="addPost(event)">
-        <textarea id="postContent" placeholder="What's on your mind?" required></textarea>
+
+  <div id="postModal" class="modal hidden">
+    <div class="modal-content">
+      <span class="close" onclick="closePostModal()">&times;</span>
+      <h2>Create New Post</h2>
+      <form id="postForm">
+        <textarea name="text" placeholder="Write something..." required></textarea>
+        <input type="file" name="media" accept="image/*,video/*" />
         <button type="submit">Post</button>
       </form>
-    </section>
-
-    <section class="posts">
-      <h3>Feed</h3>
-      <!-- Example post -->
-      <div class="post">
-        <div class="post-content">Here's my first Connectify update!</div>
-        <img src="sample.jpg" alt="User Post Image" class="post-image" />
-        <div class="post-video">
-          <video controls width="100%">
-            <source src="sample.mp4" type="video/mp4" />
-          </video>
-        </div>
-        <div class="post-meta">
-          <span>👍 12 Likes</span> · 
-          <span>💬 3 Comments</span> · 
-          <span>🕒 Modified: 12/07/2025</span>
-        </div>
-      </div>
-    </section>
+    </div>
   </div>
 
-  <script>
-    function addPost(event) {
-      event.preventDefault();
-      const content = document.getElementById("postContent").value;
-      if (!content.trim()) return;
-
-      const postSection = document.querySelector(".posts");
-      const newPost = document.createElement("div");
-      newPost.className = "post";
-      newPost.innerHTML = `
-        <div class="post-content">${content}</div>
-        <div class="post-meta">
-          <span>👍 0 Likes</span> · 
-          <span>💬 0 Comments</span> · 
-          <span>🕒 Modified: ${new Date().toLocaleDateString()}</span>
-        </div>
-      `;
-      postSection.appendChild(newPost);
-      document.getElementById("postContent").value = "";
-    }
-  </script>
+  <script src="./js/feed.js"></script>
 </body>
 </html>

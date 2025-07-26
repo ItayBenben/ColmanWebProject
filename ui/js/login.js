@@ -21,13 +21,13 @@ $(document).ready(function () {
             headers: {
                 'Content-Type': 'application/json'
             },
-            data: JSON.stringify({ email, password }),
+            data: JSON.stringify({ email, password,}),
             xhrFields: { withCredentials: true }, // for cookies to be sent with cross-origin requests
             success: function (data) {
                 console.log('Login successful');
-                const username = getCookie('username');
-                console.log('Logged in user:', username);
-                window.location.href = 'index.html';
+                const user_id = getCookie('id');
+                console.log('Logged in user:', getCookie('username'));
+                window.location.href = 'feed.html';
             },
             error: function (jqXHR) {
                 const errorMessage = jqXHR.responseJSON?.msg || 'An unknown error occurred';

@@ -2,7 +2,7 @@ class Header {
     constructor(activeLink = '') {
         this.activeLink = activeLink;
         this.user = getCookie('username');
-        this.isAdmin = getCookie('isAdmin') === 'true';
+        
     }
 
     renderAuthButton() {
