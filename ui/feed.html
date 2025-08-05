@@ -9,8 +9,11 @@
 <body>
   <div class="navbar">Connectify</div>
   <div class="search-bar">
-    <input type="text" id="searchInput" placeholder="Search friends, groups, or posts..." />
-    <button onclick="performSearch()">🔍</button>
+    <input type="text" id="searchInput" placeholder="Search..." class="form-control" />
+    <button onclick="performSearch()" class="btn btn-primary mt-2">Search</button>
+  </div>
+  
+  <div id="searchResults" class="results-container mt-4">
   </div>
   <div class="container">
     <aside class="sidebar">

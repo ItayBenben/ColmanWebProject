@@ -1,11 +1,16 @@
+function getCookie(name) {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    return parts.length === 2 ? parts.pop().split(';').shift() : null;
+  }
 const token = localStorage.getItem("authToken");
 
 async function fetchFeed() {
-  const res = await fetch("/api/posts/feed", {
+  const res = await fetch("http://localhost:5000/api/feed/", {
     headers: { "x-auth-token": token }
   });
   const posts = await res.json();
-
+  const currentUserId = getCookie('id');
   const postsContainer = document.getElementById("posts");
   postsContainer.innerHTML = "";
 
@@ -52,7 +57,7 @@ document.getElementById("postForm").addEventListener("submit", async function(e)
   e.preventDefault();
   const formData = new FormData(this);
 
-  await fetch("/api/posts", {
+  await fetch("http://localhost:5000/api/posts/", {
     method: "POST",
     headers: {
       "x-auth-token": token
@@ -65,7 +70,7 @@ document.getElementById("postForm").addEventListener("submit", async function(e)
 });
 
 async function likePost(postId) {
-  await fetch(`/api/posts/${postId}/like`, {
+  await fetch(`http://localhost:5000/api/feed/`, {
     method: "POST",
     headers: { "x-auth-token": token }
   });
@@ -76,7 +81,7 @@ async function commentOnPost(event, postId) {
   event.preventDefault();
   const form = event.target;
   const text = form.comment.value;
-  await fetch(`/api/posts/${postId}/comment`, {
+  await fetch(`http://localhost:5000/api/api/posts/${postId}/comment`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -90,8 +95,8 @@ async function commentOnPost(event, postId) {
 
 async function fetchFriendsAndGroups() {
   const [friendsRes, groupsRes] = await Promise.all([
-    fetch("/api/users/friends", { headers: { "x-auth-token": token } }),
-    fetch("/api/user_groups/my-groups", { headers: { "x-auth-token": token } })
+    fetch(`http://localhost:5000/api/users/my-friends`, { headers: { "x-auth-token": token } }),
+    fetch("http://localhost:5000/api/users/my-groups", { headers: { "x-auth-token": token } })
   ]);
 
   const friends = await friendsRes.json();
@@ -119,52 +124,62 @@ function performSearch() {
     fetch(`/api/search?q=${encodeURIComponent(query)}`)
       .then(response => response.json())
       .then(data => {
-        // Assume the backend returns an object like:
-        // { friends: [...], groups: [...], posts: [...] }
-  
-        updateFriendList(data.friends);
-        updateGroupList(data.groups);
-        updatePosts(data.posts);
+        displaySearchResults(data);
       })
       .catch(error => {
         console.error('Search error:', error);
       });
   }
   
-  function updateFriendList(friends) {
-    const list = document.getElementById('friendList');
-    list.innerHTML = '';
-    friends.forEach(friend => {
-      const li = document.createElement('li');
-      li.textContent = friend.name;
-      list.appendChild(li);
-    });
+  function displaySearchResults(data) {
+    const container = document.getElementById('searchResults');
+    container.innerHTML = ''; // clear previous
+  
+    // Friends
+    if (data.friends && data.friends.length > 0) {
+      const friendSection = createResultSection('Friends', data.friends, friend => `<div class="result-item">${friend.name}</div>`);
+      container.appendChild(friendSection);
+    }
+  
+    // Groups
+    if (data.groups && data.groups.length > 0) {
+      const groupSection = createResultSection('Groups', data.groups, group => `<div class="result-item">${group.name}</div>`);
+      container.appendChild(groupSection);
+    }
+  
+    // Posts
+    if (data.posts && data.posts.length > 0) {
+      const postSection = createResultSection('Posts', data.posts, post => `
+        <div class="post">
+          <p><strong>${post.author}</strong></p>
+          <p>${post.text}</p>
+          ${post.mediaUrl ? `<img src="${post.mediaUrl}" alt="media" style="max-width: 100%"/>` : ''}
+        </div>
+      `);
+      container.appendChild(postSection);
+    }
+  
+    // Nothing found
+    if (
+      (!data.friends || data.friends.length === 0) &&
+      (!data.groups || data.groups.length === 0) &&
+      (!data.posts || data.posts.length === 0)
+    ) {
+      container.innerHTML = '<p>No results found.</p>';
+    }
   }
   
-  function updateGroupList(groups) {
-    const list = document.getElementById('groupList');
-    list.innerHTML = '';
-    groups.forEach(group => {
-      const li = document.createElement('li');
-      li.textContent = group.name;
-      list.appendChild(li);
+  function createResultSection(title, items, renderFn) {
+    const section = document.createElement('div');
+    section.className = 'results-section';
+    section.innerHTML = `<h4>${title}</h4>`;
+    items.forEach(item => {
+      section.innerHTML += renderFn(item);
     });
+    return section;
   }
-  
-  function updatePosts(posts) {
-    const container = document.getElementById('posts');
-    container.innerHTML = '';
-    posts.forEach(post => {
-      const div = document.createElement('div');
-      div.className = 'post';
-      div.innerHTML = `
-        <p><strong>${post.author}</strong></p>
-        <p>${post.text}</p>
-        ${post.mediaUrl ? `<img src="${post.mediaUrl}" alt="media" />` : ''}
-      `;
-      container.appendChild(div);
-    });
-  }
+
+
 document.getElementById('searchInput').addEventListener('keydown', function (e) {
     if (e.key === 'Enter') {
       performSearch();
