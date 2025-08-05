@@ -8,13 +8,15 @@
 </head>
 <body>
   <div class="navbar">Connectify</div>
-  <div class="search-bar">
-    <input type="text" id="searchInput" placeholder="Search..." class="form-control" />
-    <button onclick="performSearch()" class="btn btn-primary mt-2">Search</button>
-  </div>
-  
-  <div id="searchResults" class="results-container mt-4">
-  </div>
+  <div id="search-container">
+  <input type="text" id="search-input" placeholder="Search users or groups...">
+  <button id="search-button">🔍</button>
+</div>
+
+<!-- Popup Results -->
+<div id="search-popup" class="hidden">
+  <div id="search-results"></div>
+</div>
   <div class="container">
     <aside class="sidebar">
       <h2>Friends</h2>
@@ -43,7 +45,7 @@
       </form>
     </div>
   </div>
-
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <script src="./js/feed.js"></script>
 </body>
 </html>

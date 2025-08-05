@@ -10,7 +10,7 @@ $(document).ready(function () {
     const token = getCookie('jwt');
     function postFB(post) {
         $.ajax({
-            url: `http://localhost:5000/api/auth/register`,
+            url: `http://localhost:5000/api/fb/`,
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -28,12 +28,12 @@ $(document).ready(function () {
     registerForm.on('submit', function (e) {
         e.preventDefault();
 
-        const name = $('#full name').val();
+        const username = $('#name').val();
         const email = $('#email').val();
         const password = $('#password').val();
         const age = $('#age').val();
-        const gender = $('#age').val();
-        const address = $('#home address').val();
+        const gender = $('#gender').val();
+        const address = $('#address').val();
 
 
         $.ajax({
@@ -42,15 +42,18 @@ $(document).ready(function () {
             headers: {
                 'Content-Type': 'application/json'
             },
-            data: JSON.stringify({ name, email, password, age, gender, address }),
-            xhrFields: { withCredentials: true },
+            data: JSON.stringify({ username, email, password, age, gender, address }),
+            //xhrFields: { withCredentials: true },
             success: function (data) {
                 console.log('Registration successful');
-                postFB(`A new member has joined us! Welcome ${name}!`);
+                // Store the token in localStorage
+                localStorage.setItem('authToken', data.token);
+               // postFB(`A new member has joined us! Welcome ${username}!`);
                 window.location.href = 'login.html';
             },
             error: function (jqXHR) {
-                const errorMessage = jqXHR.responseJSON?.msg || jqXHR.responseJSON?.errors?.[0]?.msg || 'An unknown error occurred';
+                console.log('Registration data sent:', { username, email, password, age, gender, address });
+                const errorMessage = jqXHR.responseJSON?.message || 'An unknown error occurred';
                 console.error('Error:', errorMessage);
                 messageElement.text('Error: ' + errorMessage).css('color', 'red');
             }

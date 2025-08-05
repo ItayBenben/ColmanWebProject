@@ -56,21 +56,45 @@ function closePostModal() {
 document.getElementById("postForm").addEventListener("submit", async function(e) {
   e.preventDefault();
   const formData = new FormData(this);
+  const text = formData.get('text');
+  const media = formData.get('media');
+  
+  // Prepare the post data according to backend expectations
+  const postData = {
+    content: text,
+    type: 'text'
+  };
+  
+  // If there's media, we'll need to handle file upload separately
+  // For now, let's just send the text content
+  if (media && media.size > 0) {
+    // TODO: Implement file upload handling
+    console.log('File upload not implemented yet');
+  }
 
-  await fetch("http://localhost:5000/api/posts/", {
-    method: "POST",
-    headers: {
-      "x-auth-token": token
-    },
-    body: formData
-  });
-
-  closePostModal();
-  fetchFeed();
+  try {
+    const response = await fetch("http://localhost:5000/api/posts/", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-auth-token": token
+      },
+      body: JSON.stringify(postData)
+    });
+    
+    if (response.ok) {
+      closePostModal();
+      fetchFeed();
+    } else {
+      console.error('Failed to create post');
+    }
+  } catch (error) {
+    console.error('Error creating post:', error);
+  }
 });
 
 async function likePost(postId) {
-  await fetch(`http://localhost:5000/api/feed/`, {
+  await fetch(`http://localhost:5000/api/posts/${postId}/like`, {
     method: "POST",
     headers: { "x-auth-token": token }
   });
@@ -81,7 +105,7 @@ async function commentOnPost(event, postId) {
   event.preventDefault();
   const form = event.target;
   const text = form.comment.value;
-  await fetch(`http://localhost:5000/api/api/posts/${postId}/comment`, {
+  await fetch(`http://localhost:5000/api/posts/${postId}/comments`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -95,96 +119,138 @@ async function commentOnPost(event, postId) {
 
 async function fetchFriendsAndGroups() {
   const [friendsRes, groupsRes] = await Promise.all([
-    fetch(`http://localhost:5000/api/users/my-friends`, { headers: { "x-auth-token": token } }),
-    fetch("http://localhost:5000/api/users/my-groups", { headers: { "x-auth-token": token } })
+    fetch(`http://localhost:5000/api/users/${getCookie('id')}`, { 
+      headers: { "x-auth-token": token } 
+    }),
+    fetch("http://localhost:5000/api/groups", { 
+      headers: { "x-auth-token": token } 
+    })
   ]);
 
-  const friends = await friendsRes.json();
+  const user = await friendsRes.json();
   const groups = await groupsRes.json();
 
   const friendList = document.getElementById("friendList");
   const groupList = document.getElementById("groupList");
 
-  friends.forEach(f => {
+  // Clear existing lists
+  friendList.innerHTML = '';
+  groupList.innerHTML = '';
+
+  // Display friends (if the user has friends populated)
+  if (user.friends && user.friends.length > 0) {
+    user.friends.forEach(friend => {
+      const li = document.createElement("li");
+      li.textContent = friend.username || friend.name;
+      friendList.appendChild(li);
+    });
+  } else {
     const li = document.createElement("li");
-    li.textContent = f.name;
+    li.textContent = "No friends yet";
     friendList.appendChild(li);
+  }
+
+  // Display groups
+  if (groups && groups.length > 0) {
+    groups.forEach(group => {
+      const li = document.createElement("li");
+      li.textContent = group.name;
+      groupList.appendChild(li);
+    });
+  } else {
+    const li = document.createElement("li");
+    li.textContent = "No groups yet";
+    groupList.appendChild(li);
+  }
+}
+$(document).ready(function () {
+  $('#search-button').on('click', function () {
+    const query = $('#search-input').val().trim();
+    if (!query) return;
+
+    $.ajax({
+      url: `http://localhost:5000/api/search`,
+      method: 'POST',
+      contentType: 'application/json',
+      data: JSON.stringify({ query }),
+      xhrFields: { withCredentials: true },
+      success: function (data) {
+        showSearchResults(data);
+      },
+      error: function () {
+        alert('Search failed. Please try again.');
+      }
+    });
   });
 
-  groups.forEach(g => {
-    const li = document.createElement("li");
-    li.textContent = g.name;
-    groupList.appendChild(li);
-  });
-}
-function performSearch() {
-    const query = document.getElementById('searchInput').value.trim();
-    if (!query) return;
-  
-    fetch(`/api/search?q=${encodeURIComponent(query)}`)
-      .then(response => response.json())
-      .then(data => {
-        displaySearchResults(data);
-      })
-      .catch(error => {
-        console.error('Search error:', error);
-      });
-  }
-  
-  function displaySearchResults(data) {
-    const container = document.getElementById('searchResults');
-    container.innerHTML = ''; // clear previous
-  
-    // Friends
-    if (data.friends && data.friends.length > 0) {
-      const friendSection = createResultSection('Friends', data.friends, friend => `<div class="result-item">${friend.name}</div>`);
-      container.appendChild(friendSection);
-    }
-  
-    // Groups
-    if (data.groups && data.groups.length > 0) {
-      const groupSection = createResultSection('Groups', data.groups, group => `<div class="result-item">${group.name}</div>`);
-      container.appendChild(groupSection);
-    }
-  
-    // Posts
-    if (data.posts && data.posts.length > 0) {
-      const postSection = createResultSection('Posts', data.posts, post => `
-        <div class="post">
-          <p><strong>${post.author}</strong></p>
-          <p>${post.text}</p>
-          ${post.mediaUrl ? `<img src="${post.mediaUrl}" alt="media" style="max-width: 100%"/>` : ''}
+  function showSearchResults(data) {
+    const resultsDiv = $('#search-results');
+    resultsDiv.empty();
+
+    const { users = [], groups = [] } = data;
+
+    users.forEach(user => {
+      const userDiv = $(`
+        <div>
+          <span class="search-name" data-id="${user._id}" data-type="user">${user.username}</span>
+          ${user.isFriend ? '' : `<button class="friend-btn" data-id="${user._id}">Add Friend</button>`}
         </div>
       `);
-      container.appendChild(postSection);
-    }
-  
-    // Nothing found
-    if (
-      (!data.friends || data.friends.length === 0) &&
-      (!data.groups || data.groups.length === 0) &&
-      (!data.posts || data.posts.length === 0)
-    ) {
-      container.innerHTML = '<p>No results found.</p>';
-    }
-  }
-  
-  function createResultSection(title, items, renderFn) {
-    const section = document.createElement('div');
-    section.className = 'results-section';
-    section.innerHTML = `<h4>${title}</h4>`;
-    items.forEach(item => {
-      section.innerHTML += renderFn(item);
+      resultsDiv.append(userDiv);
     });
-    return section;
-  }
 
+    groups.forEach(group => {
+    const groupDiv = $(`
+      <div>
+        <span class="search-name" data-id="${group._id}" data-type="group">${group.name}</span>
+        ${group.isMember ? '' : `<button class="group-btn" data-id="${group._id}">Join Group</button>`}
+      </div>
+    `);
+    resultsDiv.append(groupDiv);
+  });
 
-document.getElementById('searchInput').addEventListener('keydown', function (e) {
-    if (e.key === 'Enter') {
-      performSearch();
+  resultsDiv.removeClass('hidden');
+}
+  // Click on user or group name
+  $(document).on('click', '.search-name', function () {
+    const id = $(this).data('id');
+    const type = $(this).data('type');
+    if (type === 'user') {
+      window.location.href = `profile.html?userId=${id}`;
+    } else {
+      window.location.href = `group.html?groupId=${id}`;
     }
+  });
+
+  // Add Friend
+  $(document).on('click', '.friend-btn', function () {
+    const userId = $(this).data('id');
+
+    $.ajax({
+      url: `http://localhost:5000/api/friends/request`,
+      method: 'POST',
+      contentType: 'application/json',
+      data: JSON.stringify({ userId }),
+      xhrFields: { withCredentials: true },
+      success: function () {
+        alert('Friend request sent!');
+      },
+      error: function () {
+        alert('Failed to send request.');
+      }
+    });
+  });
+
+  // Optional: Hide popup when clicking outside
+  $(document).on('click', function (e) {
+    if (!$(e.target).closest('#search-container, #search-popup').length) {
+      $('#search-popup').addClass('hidden');
+    }
+  });
 });
+
+
+
 document.addEventListener("DOMContentLoaded", () => {
   fetchFeed();
   fetchFriendsAndGroups();
