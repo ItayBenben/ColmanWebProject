@@ -1,6 +1,5 @@
 import User from '../models/User.js';
 import jwt from 'jsonwebtoken';
-import { sendWelcomeFacebook } from '../services/facebookService.js';
 
 const generateToken = (user) => {
   return jwt.sign({ id: user._id }, process.env.JWT_SECRET || 'secret', { expiresIn: '7d' });
@@ -11,7 +10,6 @@ export const register = async (req, res, next) => {
     const { username, password, email } = req.body;
     const user = new User({ username, password, email });
     await user.save();
-    sendWelcomeFacebook(user); // async, don't await
     const token = generateToken(user);
     res.status(201).json({ token, user: { id: user._id, username, email } });
   } catch (err) {
