@@ -62,16 +62,16 @@ export const searchUsers = async (req, res, next) => {
   }
 };
 
-export const sendFriendRequest = async (req, res, next) => {
+export const addFriend = async (req, res, next) => {
   try {
     const { userId } = req.body;
     if (userId === req.user._id.toString()) return res.status(400).json({ message: 'Cannot friend yourself' });
     const user = await User.findById(userId);
     if (!user) return res.status(404).json({ message: 'User not found' });
-    if (user.friendRequests.includes(req.user._id)) return res.status(400).json({ message: 'Already requested' });
-    user.friendRequests.push(req.user._id);
+    if (user.friends.includes(req.user._id)) return res.status(400).json({ message: 'Already friends' });
+    user.friends.push(req.user._id);
     await user.save();
-    res.json({ message: 'Friend request sent' });
+    res.json({ message: 'Friend added' });
   } catch (err) {
     next(err);
   }
