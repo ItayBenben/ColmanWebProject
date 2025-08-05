@@ -7,13 +7,10 @@ function getCookie(name) {
 $(document).ready(function () {
     const registerForm = $('#register-form');
     const messageElement = $('#register-message');
-    const API_BASE_URL = `${window.location.protocol}//${window.location.hostname}:3000/api`;
     const token = getCookie('jwt');
-
-    // Post a welcome post after registration
     function postFB(post) {
         $.ajax({
-            url: `${API_BASE_URL}/fb`,
+            url: `http://localhost:5000/api/auth/register`,
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -40,7 +37,7 @@ $(document).ready(function () {
 
 
         $.ajax({
-            url: `${API_BASE_URL}/users/register`,
+            url: `http://localhost:5000/api/auth/register`,
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'

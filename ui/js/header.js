@@ -7,20 +7,17 @@ class Header {
 
     renderAuthButton() {
         if (this.user !== undefined) {
-            let adminPanelLink = '';
-            if (this.isAdmin) {
-                adminPanelLink = `<li><a class="dropdown-item" href="adminPanel.html">Admin Panel</a></li>`;
-            }
             return `
-                <div class="nav-item dropdown">
+                <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                         ${this.user}
                     </a>
                     <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-                        ${adminPanelLink}
+                        <li>
+                            <a class="dropdown-item" href="user_profile.html?user=${encodeURIComponent(this.user)}">My Profile</a>
+                        </li>
                         <li><a class="dropdown-item" href="#" onclick="logout()">Sign-Out</a></li>
                     </ul>
-                
                 </li>
             `;
         } else {
@@ -29,7 +26,7 @@ class Header {
                     <a class="nav-link" href="login.html">Login</a>
                 </li>
                 <li class="nav-item">
-                <a class="nav-link" href="register.html">Register</a>
+                    <a class="nav-link" href="register.html">Register</a>
                 </li>
             `;
         }

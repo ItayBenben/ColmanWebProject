@@ -13,10 +13,9 @@ $(document).ready(function () {
 
         const email = $('#email').val();
         const password = $('#password').val();
-        const API_BASE_URL = `${window.location.protocol}//${window.location.hostname}:3000/api`;
 
         $.ajax({
-            url: `${API_BASE_URL}/users/login`,
+            url: `http://localhost:5000/api/auth/login`,
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
