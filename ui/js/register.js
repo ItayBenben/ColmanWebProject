@@ -7,16 +7,23 @@ function getCookie(name) {
 $(document).ready(function () {
     const registerForm = $('#register-form');
     const messageElement = $('#register-message');
-    const token = getCookie('jwt');
+    
     function postFB(post) {
+        const token = localStorage.getItem('jwt');
+        if (!token) {
+            console.log('No token available for Facebook post');
+            return;
+        }
+        
         $.ajax({
             url: `http://localhost:5000/api/fb/`,
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'x-auth-token': token
+                'Authorization': `Bearer ${token}`
             },
             data: JSON.stringify({ "fb": post }),
+            xhrFields: { withCredentials: true },
             success: function (result) {
                 console.log('fb post posted:', result);
             },
@@ -25,6 +32,7 @@ $(document).ready(function () {
             }
         });
     }
+    
     registerForm.on('submit', function (e) {
         e.preventDefault();
 
@@ -35,7 +43,6 @@ $(document).ready(function () {
         const gender = $('#gender').val();
         const address = $('#address').val();
 
-
         $.ajax({
             url: `http://localhost:5000/api/auth/register`,
             method: 'POST',
@@ -43,12 +50,18 @@ $(document).ready(function () {
                 'Content-Type': 'application/json'
             },
             data: JSON.stringify({ username, email, password, age, gender, address }),
-            //xhrFields: { withCredentials: true },
+            xhrFields: { withCredentials: true },
             success: function (data) {
                 console.log('Registration successful');
-                // Store the token in localStorage
-                localStorage.setItem('authToken', data.token);
-               // postFB(`A new member has joined us! Welcome ${username}!`);
+                
+                // Store JWT token if provided
+                if (data.token) {
+                    localStorage.setItem('jwt', data.token);
+                    localStorage.setItem('userId', data.user.id);
+                    localStorage.setItem('username', data.user.username);
+                }
+                
+                // postFB(`A new member has joined us! Welcome ${username}!`);
                 window.location.href = 'login.html';
             },
             error: function (jqXHR) {
