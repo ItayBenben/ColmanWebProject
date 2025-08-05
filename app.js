@@ -8,6 +8,8 @@ import userRoutes from './routes/userRoutes.js';
 import groupRoutes from './routes/groupRoutes.js';
 import postRoutes from './routes/postRoutes.js';
 import feedRoutes from './routes/feedRoutes.js';
+import commentRoutes from './routes/commentRoutes.js';
+import likeRoutes from './routes/likeRoutes.js';
 import { errorHandler } from './middleware/errorHandler.js';
 
 dotenv.config();
@@ -22,6 +24,8 @@ app.use('/api/users', userRoutes);
 app.use('/api/groups', groupRoutes);
 app.use('/api/posts', postRoutes);
 app.use('/api/feed', feedRoutes);
+app.use('/api', commentRoutes);
+app.use('/api', likeRoutes);
 
 app.use(errorHandler);
 
