@@ -7,13 +7,10 @@ function getCookie(name) {
 $(document).ready(function () {
     const registerForm = $('#register-form');
     const messageElement = $('#register-message');
-    const API_BASE_URL = `${window.location.protocol}//${window.location.hostname}:3000/api`;
     const token = getCookie('jwt');
-
-    // Post a welcome post after registration
     function postFB(post) {
         $.ajax({
-            url: `${API_BASE_URL}/fb`,
+            url: `http://localhost:5000/api/auth/register`,
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -36,20 +33,20 @@ $(document).ready(function () {
         const password = $('#password').val();
         const age = $('#age').val();
         const gender = $('#age').val();
-        const location = $('#home location').val();
+        const address = $('#home address').val();
 
 
         $.ajax({
-            url: `${API_BASE_URL}/users/register`,
+            url: `http://localhost:5000/api/auth/register`,
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
-            data: JSON.stringify({ name, email, password, age, gender, location }),
+            data: JSON.stringify({ name, email, password, age, gender, address }),
             xhrFields: { withCredentials: true },
             success: function (data) {
                 console.log('Registration successful');
-                postFB(`A new member has joined us! Welcome ${username}!`);
+                postFB(`A new member has joined us! Welcome ${name}!`);
                 window.location.href = 'login.html';
             },
             error: function (jqXHR) {

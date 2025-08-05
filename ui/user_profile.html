@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Feed</title>
+    <link rel="stylesheet" href="./css/user_profile.css" />
+  </head>
+  <body>
+    <div class="navbar">Connectify</div>
+    <div class="search-bar">
+      <input type="text" id="searchInput" placeholder="Search..." class="form-control" />
+      <button onclick="performSearch()" class="btn btn-primary mt-2">Search</button>
+    </div>
+    
+    <div id="searchResults" class="results-container mt-4">
+    </div>
+    <div class="container">
+      <aside class="sidebar">
+        <h2>Friends</h2>
+        <ul id="friendList"></ul>
+  
+        <h2>Groups</h2>
+        <ul id="groupList"></ul>
+      </aside>
+  
+    <div class="profile-container">
+      
+    <div class="user-info">
+        <div class="user-img">
+          <img id="user-avatar" src="default-avatar.jpg" alt="User Avatar" />
+  
+          <button id="editBtn" class="hidden">Edit Profile</button>
+        </div>
+      </div>
+  
+      <div class="profile-info">
+        <div class="content">
+          <p><strong>Name:</strong> <span id="user-name"></span></p>
+          <p><strong>Email:</strong> <span id="user-email"></span></p>
+          <p><strong>Age:</strong> <span id="user-age"></span></p>
+          <p><strong>Gender:</strong> <span id="user-gender"></span></p>
+          <p><strong>Email:</strong> <span id="user-email"></span></p>
+          <p><strong>Education:</strong> <span id="user-education"></span></p>
+          <p><strong>Birthday:</strong> <span id="user-birthday"></span></p>
+          <p><strong>Home Address:</strong> <span id="user-location"></span></p>
+          <span id="user-location"></span>
+        </p>
+        <div id="map" class="hidden"></div>
+        </div>
+      </div>
+      </div>
+    </div>
+  </div>
+  <div id="editProfileModal" class="modal hidden">
+    <div class="modal-content">
+      <span class="close" onclick="closeEditProfileModal()">&times;</span>
+      <h2>Edit Your Profile</h2>
+      <form id="editProfileForm">
+        <label>Name:</label>
+        <input type="text" id="editName" name="name" required />
+  
+        <label>Email:</label>
+        <input type="email" id="editEmail" name="email" required />
+  
+        <label>Age:</label>
+        <input type="number" id="editAge" name="age" required />
+  
+        <label>Gender:</label>
+        <input type="text" id="editGender" name="gender" />
+  
+        <label>Education:</label>
+        <input type="text" id="editEducation" name="education" />
+  
+        <label>Birthday:</label>
+        <input type="date" id="editBirthday" name="birthday" />
+  
+        <label>Home Address:</label>
+        <input type="text" id="editLocation" name="location" />
+  
+        <label>Profile Picture:</label>
+        <input type="file" id="editPicture" name="picture" accept="image/*" />
+  
+        <button type="submit">Save Changes</button>
+      </form>
+    </div>
+  </div>
+  <script src="./js/user_profile.js"></script>
+  <script src="./js/feed.js"></script>
+</body>
+</html>
