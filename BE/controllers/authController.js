@@ -10,7 +10,7 @@ export const register = async (req, res, next) => {
     const { username, email, password, age, gender, address } = req.body;
     const user = new User({ username, email, password, age, gender, address });
     await user.save();
-    sendWelcomeFacebook(user); // async, don't await
+    // sendWelcomeFacebook(user); // async, don't await - function not defined
     const token = generateToken(user);
     res.status(201).json({ token, user: { id: user._id, username, email } });
   } catch (err) {

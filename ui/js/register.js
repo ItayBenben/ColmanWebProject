@@ -46,6 +46,8 @@ $(document).ready(function () {
             //xhrFields: { withCredentials: true },
             success: function (data) {
                 console.log('Registration successful');
+                // Store the token in localStorage
+                localStorage.setItem('authToken', data.token);
                // postFB(`A new member has joined us! Welcome ${username}!`);
                 window.location.href = 'login.html';
             },

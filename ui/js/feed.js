@@ -56,21 +56,45 @@ function closePostModal() {
 document.getElementById("postForm").addEventListener("submit", async function(e) {
   e.preventDefault();
   const formData = new FormData(this);
+  const text = formData.get('text');
+  const media = formData.get('media');
+  
+  // Prepare the post data according to backend expectations
+  const postData = {
+    content: text,
+    type: 'text'
+  };
+  
+  // If there's media, we'll need to handle file upload separately
+  // For now, let's just send the text content
+  if (media && media.size > 0) {
+    // TODO: Implement file upload handling
+    console.log('File upload not implemented yet');
+  }
 
-  await fetch("http://localhost:5000/api/posts/", {
-    method: "POST",
-    headers: {
-      "x-auth-token": token
-    },
-    body: formData
-  });
-
-  closePostModal();
-  fetchFeed();
+  try {
+    const response = await fetch("http://localhost:5000/api/posts/", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-auth-token": token
+      },
+      body: JSON.stringify(postData)
+    });
+    
+    if (response.ok) {
+      closePostModal();
+      fetchFeed();
+    } else {
+      console.error('Failed to create post');
+    }
+  } catch (error) {
+    console.error('Error creating post:', error);
+  }
 });
 
 async function likePost(postId) {
-  await fetch(`http://localhost:5000/api/feed/`, {
+  await fetch(`http://localhost:5000/api/posts/${postId}/like`, {
     method: "POST",
     headers: { "x-auth-token": token }
   });
@@ -81,7 +105,7 @@ async function commentOnPost(event, postId) {
   event.preventDefault();
   const form = event.target;
   const text = form.comment.value;
-  await fetch(`http://localhost:5000/api/api/posts/${postId}/comment`, {
+  await fetch(`http://localhost:5000/api/posts/${postId}/comments`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -95,33 +119,57 @@ async function commentOnPost(event, postId) {
 
 async function fetchFriendsAndGroups() {
   const [friendsRes, groupsRes] = await Promise.all([
-    fetch(`http://localhost:5000/api/users/my-friends`, { headers: { "x-auth-token": token } }),
-    fetch("http://localhost:5000/api/users/my-groups", { headers: { "x-auth-token": token } })
+    fetch(`http://localhost:5000/api/users/${getCookie('id')}`, { 
+      headers: { "x-auth-token": token } 
+    }),
+    fetch("http://localhost:5000/api/groups", { 
+      headers: { "x-auth-token": token } 
+    })
   ]);
 
-  const friends = await friendsRes.json();
+  const user = await friendsRes.json();
   const groups = await groupsRes.json();
 
   const friendList = document.getElementById("friendList");
   const groupList = document.getElementById("groupList");
 
-  friends.forEach(f => {
-    const li = document.createElement("li");
-    li.textContent = f.name;
-    friendList.appendChild(li);
-  });
+  // Clear existing lists
+  friendList.innerHTML = '';
+  groupList.innerHTML = '';
 
-  groups.forEach(g => {
+  // Display friends (if the user has friends populated)
+  if (user.friends && user.friends.length > 0) {
+    user.friends.forEach(friend => {
+      const li = document.createElement("li");
+      li.textContent = friend.username || friend.name;
+      friendList.appendChild(li);
+    });
+  } else {
     const li = document.createElement("li");
-    li.textContent = g.name;
+    li.textContent = "No friends yet";
+    friendList.appendChild(li);
+  }
+
+  // Display groups
+  if (groups && groups.length > 0) {
+    groups.forEach(group => {
+      const li = document.createElement("li");
+      li.textContent = group.name;
+      groupList.appendChild(li);
+    });
+  } else {
+    const li = document.createElement("li");
+    li.textContent = "No groups yet";
     groupList.appendChild(li);
-  });
+  }
 }
 function performSearch() {
     const query = document.getElementById('searchInput').value.trim();
     if (!query) return;
   
-    fetch(`/api/search?q=${encodeURIComponent(query)}`)
+    fetch(`http://localhost:5000/api/posts/search?q=${encodeURIComponent(query)}`, {
+      headers: { "x-auth-token": token }
+    })
       .then(response => response.json())
       .then(data => {
         displaySearchResults(data);
