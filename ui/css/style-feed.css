@@ -112,7 +112,7 @@ body {
   align-items: center;
 }
 
-.modal.hidden {
+.hidden {
   display: none;
 }
 
@@ -138,63 +138,69 @@ body {
   cursor: pointer;
   font-size: 1.5rem;
 }
-.search-bar {
+#search-container {
   display: flex;
   justify-content: center;
-  margin: 10px 0;
+  padding: 10px;
+  background-color: #f1f1f1;
 }
 
-.search-bar input {
+#search-input {
+  width: 300px;
   padding: 8px;
-  width: 60%;
-  max-width: 400px;
+  border-radius: 4px;
   border: 1px solid #ccc;
-  border-radius: 4px 0 0 4px;
 }
 
-.search-bar button {
+#search-button {
+  margin-left: 8px;
   padding: 8px 12px;
-  border: 1px solid #ccc;
-  border-left: none;
+  cursor: pointer;
+}
+
+#search-popup {
+  position: absolute;
+  top: 60px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 90%;
+  max-width: 500px;
+  background-color: white;
+  border: 1px solid #aaa;
+  border-radius: 6px;
+  padding: 10px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  z-index: 1000;
+}
+
+#search-results div {
+  padding: 8px;
+  border-bottom: 1px solid #eee;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.search-name {
+  cursor: pointer;
+  color: blue;
+  text-decoration: underline;
+}
+
+.friend-btn {
   background-color: #4CAF50;
   color: white;
-  border-radius: 0 4px 4px 0;
+  border: none;
+  padding: 6px 10px;
+  border-radius: 4px;
   cursor: pointer;
 }
-
-.search-bar button:hover {
-  background-color: #45a049;
-}
-
-.results-container {
-  max-height: 400px;
-  overflow-y: auto;
-  border: 1px solid #ccc;
-  padding: 10px;
-  margin-top: 10px;
-  background-color: #f9f9f9;
-}
-.results-section {
-  margin-bottom: 20px;
-}
-.results-section h4 {
-  margin-bottom: 10px;
-  border-bottom: 1px solid #ddd;
-  padding-bottom: 4px;
-}
-.result-item {
-  margin-bottom: 6px;
-  padding: 4px;
+.group-btn {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 6px 10px;
   border-radius: 4px;
-}
-.result-item:hover {
-  background-color: #eef;
   cursor: pointer;
-}
-.post {
-  padding: 8px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  background-color: #fff;
-  margin-bottom: 8px;
+  margin-left: 8px;
 }

@@ -11,7 +11,7 @@ $(document).ready(function () {
     loginForm.on('submit', function (e) {
         e.preventDefault();
 
-        const email = $('#email').val();
+        const username = $('#username').val();
         const password = $('#password').val();
 
         $.ajax({
@@ -20,7 +20,7 @@ $(document).ready(function () {
             headers: {
                 'Content-Type': 'application/json'
             },
-            data: JSON.stringify({ email, password,}),
+            data: JSON.stringify({ username, password,}),
             xhrFields: { withCredentials: true }, // for cookies to be sent with cross-origin requests
             success: function (data) {
                 console.log('Login successful');
