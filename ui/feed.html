@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Feed</title>
+  <link rel="stylesheet" href="./css/style-feed.css" />
+</head>
+<body>
+  <div class="navbar">Connectify</div>
+  <div class="search-bar">
+    <input type="text" id="searchInput" placeholder="Search..." class="form-control" />
+    <button onclick="performSearch()" class="btn btn-primary mt-2">Search</button>
+  </div>
+  
+  <div id="searchResults" class="results-container mt-4">
+  </div>
+  <div class="container">
+    <aside class="sidebar">
+      <h2>Friends</h2>
+      <ul id="friendList"></ul>
+
+      <h2>Groups</h2>
+      <ul id="groupList"></ul>
+    </aside>
+
+
+    <main class="feed">
+      <button onclick="openPostModal()">➕ New Post</button>
+      <div id="posts"></div>
+    </main>
+  </div>
+
+
+  <div id="postModal" class="modal hidden">
+    <div class="modal-content">
+      <span class="close" onclick="closePostModal()">&times;</span>
+      <h2>Create New Post</h2>
+      <form id="postForm">
+        <textarea name="text" placeholder="Write something..." required></textarea>
+        <input type="file" name="media" accept="image/*,video/*" />
+        <button type="submit">Post</button>
+      </form>
+    </div>
+  </div>
+
+  <script src="./js/feed.js"></script>
+</body>
+</html>
