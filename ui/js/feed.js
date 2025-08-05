@@ -3,7 +3,8 @@ function getCookie(name) {
     const parts = value.split(`; ${name}=`);
     return parts.length === 2 ? parts.pop().split(';').shift() : null;
   }
-const token = getCookie('jwt');
+
+const token = localStorage.getItem('jwt');
 
 // Check if user is authenticated
 function checkAuth() {
@@ -21,12 +22,13 @@ async function fetchFeed() {
   try {
     const res = await fetch("http://localhost:5000/api/feed/", {
       headers: { "Authorization": `Bearer ${token}` },
-      credentials: 'include' // Important for cookies
+      credentials: 'include'
     });
     
     if (!res.ok) {
       if (res.status === 401) {
         console.log('Token expired, redirecting to login');
+        localStorage.clear();
         window.location.href = 'login.html';
         return;
       }
@@ -34,7 +36,7 @@ async function fetchFeed() {
     }
     
     const posts = await res.json();
-    const currentUserId = getCookie('userId');
+    const currentUserId = localStorage.getItem('userId');
     const postsContainer = document.getElementById("posts");
     postsContainer.innerHTML = "";
 
@@ -184,7 +186,7 @@ async function commentOnPost(event, postId) {
 async function fetchFriendsAndGroups() {
   if (!checkAuth()) return;
   
-  const userId = getCookie('userId');
+  const userId = localStorage.getItem('userId');
   if (!userId) {
     console.log('No user ID found, skipping friends/groups fetch');
     return;

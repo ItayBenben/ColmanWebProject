@@ -32,10 +32,18 @@ $(document).ready(function () {
                 'Content-Type': 'application/json'
             },
             data: JSON.stringify({ username, password }),
-            xhrFields: { withCredentials: true }, // Important for cookies
+            xhrFields: { withCredentials: true },
             success: function (data) {
                 console.log('Login successful');
                 console.log('Logged in user:', data.user.username);
+                
+                // Store JWT token in localStorage for API calls
+                if (data.token) {
+                    localStorage.setItem('jwt', data.token);
+                    localStorage.setItem('userId', data.user.id);
+                    localStorage.setItem('username', data.user.username);
+                }
+                
                 console.log('Redirecting to feed...');
                 window.location.href = 'feed.html';
             },

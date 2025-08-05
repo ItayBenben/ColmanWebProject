@@ -7,9 +7,14 @@ function getCookie(name) {
 $(document).ready(function () {
     const registerForm = $('#register-form');
     const messageElement = $('#register-message');
-    const token = getCookie('jwt');
     
     function postFB(post) {
+        const token = localStorage.getItem('jwt');
+        if (!token) {
+            console.log('No token available for Facebook post');
+            return;
+        }
+        
         $.ajax({
             url: `http://localhost:5000/api/fb/`,
             method: 'POST',
@@ -48,6 +53,14 @@ $(document).ready(function () {
             xhrFields: { withCredentials: true },
             success: function (data) {
                 console.log('Registration successful');
+                
+                // Store JWT token if provided
+                if (data.token) {
+                    localStorage.setItem('jwt', data.token);
+                    localStorage.setItem('userId', data.user.id);
+                    localStorage.setItem('username', data.user.username);
+                }
+                
                 // postFB(`A new member has joined us! Welcome ${username}!`);
                 window.location.href = 'login.html';
             },
