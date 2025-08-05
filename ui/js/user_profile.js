@@ -34,12 +34,14 @@ function getCookie(name) {
   
   async function loadUserProfile(userId) {
     try {
-      const res = await fetch(`/api/users/${userId}`);
+      const res = await fetch(`http://localhost:5000/api/users/${userId}`, {
+        headers: { "x-auth-token": localStorage.getItem("authToken") }
+      });
       if (!res.ok) throw new Error('Failed to load user profile');
       const user = await res.json();
   
       updateUserInfo(user);
-      showMapForAddress(user.location);
+      showMapForAddress(user.address); // Changed from location to address to match User model
     } catch (err) {
       console.error(err);
       alert('Could not load profile.');
@@ -47,15 +49,16 @@ function getCookie(name) {
   }
   
   function updateUserInfo(user) {
-    document.getElementById('user-name').textContent = user.name;
+    document.getElementById('user-name').textContent = user.username; // Changed from name to username
     document.getElementById('user-email').textContent = user.email;
     document.getElementById('user-age').textContent = user.age;
     document.getElementById('user-gender').textContent = user.gender;
-    document.getElementById('user-education').textContent = user.education;
-    document.getElementById('user-birthday').textContent = new Date(user.birthday).toLocaleDateString();
-    document.getElementById('user-location').textContent = user.location;
-    document.getElementById('user-bio').textContent = user.bio;
-    document.getElementById('user-avatar').src = user.avatarUrl || 'default-avatar.jpg';
+    // Remove fields that don't exist in User model
+    // document.getElementById('user-education').textContent = user.education;
+    // document.getElementById('user-birthday').textContent = new Date(user.birthday).toLocaleDateString();
+    document.getElementById('user-location').textContent = user.address; // Changed from location to address
+    // document.getElementById('user-bio').textContent = user.bio;
+    // document.getElementById('user-avatar').src = user.avatarUrl || 'default-avatar.jpg';
   }
   
   function openEditProfileModal() {
@@ -65,10 +68,11 @@ function getCookie(name) {
     document.getElementById('editEmail').value = document.getElementById('user-email').textContent;
     document.getElementById('editAge').value = document.getElementById('user-age').textContent;
     document.getElementById('editGender').value = document.getElementById('user-gender').textContent;
-    document.getElementById('editEducation').value = document.getElementById('user-education').textContent;
-    document.getElementById('editBirthday').value = document.getElementById('user-birthday').textContent;
+    // Remove fields that don't exist in User model
+    // document.getElementById('editEducation').value = document.getElementById('user-education').textContent;
+    // document.getElementById('editBirthday').value = document.getElementById('user-birthday').textContent;
     document.getElementById('editLocation').value = document.getElementById('user-location').textContent;
-    document.getElementById('editBio').value = document.getElementById('user-bio').textContent;
+    // document.getElementById('editBio').value = document.getElementById('user-bio').textContent;
   }
   
   function closeEditProfileModal() {
@@ -78,13 +82,24 @@ function getCookie(name) {
   async function submitProfileEdit(e) {
     e.preventDefault();
     const form = e.target;
-    const formData = new FormData(form);
-    formData.append('id', currentUserId);
-  
+    
+    // Prepare JSON data instead of FormData
+    const updateData = {
+      username: form.editName.value,
+      email: form.editEmail.value,
+      age: parseInt(form.editAge.value),
+      gender: form.editGender.value,
+      address: form.editLocation.value
+    };
+
     try {
       const res = await fetch(`http://localhost:5000/api/users/${currentUserId}`, {
-        method: 'POST',
-        body: formData
+        method: 'PUT', // Changed from POST to PUT
+        headers: {
+          'Content-Type': 'application/json',
+          'x-auth-token': localStorage.getItem("authToken")
+        },
+        body: JSON.stringify(updateData)
       });
   
       if (!res.ok) throw new Error('Update failed');

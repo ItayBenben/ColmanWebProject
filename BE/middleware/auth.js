@@ -2,7 +2,7 @@ import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
 
 export const auth = async (req, res, next) => {
-  const token = req.headers.jsonwebtoken;
+  const token = req.headers['x-auth-token'];
   if (!token) {
     return res.status(401).json({ message: 'No token provided' });
   }
