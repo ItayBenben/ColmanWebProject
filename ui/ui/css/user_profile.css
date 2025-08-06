@@ -1,0 +1,211 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background: #f0f2f5;
+    font-size: 15px;
+  }
+  
+  .navbar, .navbar-brand, .navbar-nav .nav-link {
+    font-size: 1rem !important;
+    padding-top: 0.3rem !important;
+    padding-bottom: 0.3rem !important;
+  }
+  
+  #header-container .navbar {
+    min-height: 48px;
+  }
+  
+  .container {
+    display: flex;
+    margin: 0.5rem auto;
+    max-width: 1100px;
+    width: 95%;
+  }
+  
+  .sidebar {
+    width: 16%;
+    min-width: 120px;
+    margin-right: 1.2rem;
+    font-size: 0.97rem;
+  }
+  
+  .profile-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+  
+  #user-avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-bottom: 0.3rem;
+    box-shadow: 0 0 6px rgba(0, 0, 0, 0.08);
+  }
+  
+  #user-bio {
+    font-size: 0.97rem;
+    color: #333;
+  }
+  
+  .profile-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    margin: 0 auto;
+  }
+  
+  .hidden {
+    display: none;
+  }
+  
+  .profile-info p {
+    margin: 0.5rem 0;
+    color: #444;
+    font-size: 0.97rem;
+  }
+  
+  .profile-info strong {
+    color: #4267b2;
+  }
+  
+  .modal {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100vw; height: 100vh;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    transition: background 0.2s;
+  }
+  
+  .modal-content {
+    background: #fff;
+    padding: 2rem 2.2rem 1.5rem 2.2rem;
+    width: 100%;
+    max-width: 400px;
+    border-radius: 16px;
+    position: relative;
+    font-size: 1rem;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.18), 0 1.5px 6px rgba(0,0,0,0.10);
+    animation: modalPopIn 0.18s cubic-bezier(.4,2,.6,1) 1;
+    margin: 0 auto;
+  }
+  
+  @keyframes modalPopIn {
+    0% { transform: scale(0.95) translateY(30px); opacity: 0; }
+    100% { transform: scale(1) translateY(0); opacity: 1; }
+  }
+  
+  .modal-content label {
+    margin-top: 0.7rem;
+    margin-bottom: 0.2rem;
+    font-weight: 500;
+    color: #4267b2;
+  }
+  
+  .modal-content input[type="text"],
+  .modal-content input[type="email"],
+  .modal-content input[type="number"],
+  .modal-content input[type="date"] {
+    width: 100%;
+    padding: 0.45rem 0.7rem;
+    margin-bottom: 0.7rem;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 1rem;
+    background: #f8f8fa;
+    transition: border 0.2s;
+  }
+  
+  .modal-content input:focus {
+    border: 1.5px solid #4267b2;
+    outline: none;
+  }
+  
+  .modal-content button[type="submit"] {
+    width: 100%;
+    margin-top: 1rem;
+    padding: 0.6rem 0;
+    background: #4267b2;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    font-size: 1.08rem;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(66,103,178,0.08);
+    transition: background 0.18s;
+  }
+  
+  .modal-content button[type="submit"]:hover {
+    background: #365899;
+  }
+  
+  .modal .close {
+    position: absolute;
+    right: 18px;
+    top: 12px;
+    font-size: 1.5rem;
+    color: #888;
+    cursor: pointer;
+    transition: color 0.18s;
+  }
+  .modal .close:hover {
+    color: #4267b2;
+  }
+  
+  #map {
+      width: 100%;
+      height: 220px;
+      margin-top: 10px;
+      border-radius: 10px;
+    }
+  
+  .results-container {
+    max-height: 300px;
+    overflow-y: auto;
+    border: 1px solid #ccc;
+    padding: 8px;
+    margin-top: 8px;
+    background-color: #f9f9f9;
+  }
+  .results-section {
+    margin-bottom: 14px;
+  }
+  .results-section h4 {
+    margin-bottom: 7px;
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 3px;
+  }
+  .result-item {
+    margin-bottom: 4px;
+    padding: 3px;
+    border-radius: 4px;
+  }
+  .result-item:hover {
+    background-color: #eef;
+    cursor: pointer;
+  }
+  .post {
+    padding: 6px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background-color: #fff;
+    margin-bottom: 6px;
+    font-size: 0.97rem;
+  }
+
+.profile-center-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
