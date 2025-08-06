@@ -91,6 +91,7 @@ export const listPosts = async (req, res, next) => {
         .populate('author', 'username')
         .populate('likes', 'username')
         .populate('comments.user', 'username')
+        .populate('comments.likes', 'username')
         .populate('group', 'name')
         .sort({ createdAt: -1 });
     } else if (req.query.userId) {
@@ -101,6 +102,7 @@ export const listPosts = async (req, res, next) => {
         .populate('author', 'username')
         .populate('likes', 'username')
         .populate('comments.user', 'username')
+        .populate('comments.likes', 'username')
         .populate('group', 'name')
         .sort({ createdAt: -1 });
     } else {
@@ -108,6 +110,7 @@ export const listPosts = async (req, res, next) => {
         .populate('author', 'username')
         .populate('likes', 'username')
         .populate('comments.user', 'username')
+        .populate('comments.likes', 'username')
         .populate('group', 'name')
         .sort({ createdAt: -1 });
     }
@@ -124,6 +127,7 @@ export const searchPosts = async (req, res, next) => {
       .populate('author', 'username')
       .populate('likes', 'username')
       .populate('comments.user', 'username')
+      .populate('comments.likes', 'username')
       .populate('group', 'name')
       .sort({ createdAt: -1 });
     res.json(posts);

@@ -5,7 +5,8 @@ import {
   unlikePost, 
   toggleLike, 
   getLikes, 
-  checkLikeStatus 
+  checkLikeStatus,
+  toggleCommentLike
 } from '../controllers/likeController.js';
 
 const router = express.Router();
@@ -24,5 +25,8 @@ router.get('/posts/:postId/likes', auth, getLikes);
 
 // Check if current user liked a post
 router.get('/posts/:postId/like/status', auth, checkLikeStatus);
+
+// Comment like routes
+router.patch('/posts/:postId/comments/:commentId/like', auth, toggleCommentLike);
 
 export default router; 

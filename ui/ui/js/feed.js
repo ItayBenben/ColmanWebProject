@@ -107,11 +107,20 @@ function displayPostsDirectly(posts) {
           // Check if current user can delete this comment (comment author or post author)
           const canDeleteComment = (c.user?._id === currentUserId) || (post.author?._id === currentUserId);
           const deleteBtn = canDeleteComment ? `<button onclick="deleteComment('${post._id}', '${c._id}')" class="delete-comment-btn">×</button>` : '';
+          
+          // Check if current user can like this comment (not their own comment)
+          const canLikeComment = c.user?._id !== currentUserId;
+          const likeCount = c.likes?.length || 0;
+          const likeBtn = canLikeComment ? `<button onclick="likeComment('${post._id}', '${c._id}')" class="like-comment-btn">❤️ ${likeCount}</button>` : (likeCount > 0 ? `<span class="comment-likes">❤️ ${likeCount}</span>` : '');
+          
           return `<div class="comment">
             <div class="comment-content">
               <strong>${c.user?.username || 'Unknown'}:</strong> ${c.text}
             </div>
-            ${deleteBtn}
+            <div class="comment-actions">
+              ${likeBtn}
+              ${deleteBtn}
+            </div>
           </div>`;
         }).join('') || ''}
         <form class="comment-form" onsubmit="return commentOnPost(event, '${post._id}')">
@@ -247,18 +256,32 @@ async function likePost(postId) {
   
   try {
     const response = await fetch(`http://localhost:5000/api/posts/${postId}/like`, {
-      method: "POST",
-      headers: { "Authorization": `Bearer ${token}` },
+      method: "PATCH", // Use PATCH for toggle functionality
+      headers: { 
+        "Authorization": `Bearer ${token}`,
+        "Content-Type": "application/json"
+      },
       credentials: 'include'
     });
     
     if (response.ok) {
-      fetchFeed();
+      const result = await response.json();
+      console.log('Like toggled:', result.message);
+      
+      // Maintain current view - if we're viewing group posts, stay there
+      if (window.currentSearchQuery === 'group-filter' && window.currentGroupId) {
+        await viewGroupPosts(window.currentGroupId);
+      } else {
+        fetchFeed();
+      }
     } else {
-      console.error('Failed to like post');
+      const errorData = await response.json();
+      console.error('Failed to toggle like:', errorData.message || 'Unknown error');
+      alert('Failed to like post: ' + (errorData.message || 'Unknown error'));
     }
   } catch (error) {
-    console.error('Error liking post:', error);
+    console.error('Error toggling like:', error);
+    alert('Error liking post. Please try again.');
   }
 }
 
@@ -550,10 +573,45 @@ async function showAllPosts() {
   await fetchFeed();
 }
 
+async function likeComment(postId, commentId) {
+  if (!checkAuth()) return;
+  
+  try {
+    const response = await fetch(`http://localhost:5000/api/posts/${postId}/comments/${commentId}/like`, {
+      method: "PATCH",
+      headers: { 
+        "Authorization": `Bearer ${token}`,
+        "Content-Type": "application/json"
+      },
+      credentials: 'include'
+    });
+    
+    if (response.ok) {
+      const result = await response.json();
+      console.log('Comment like toggled:', result.message);
+      
+      // Maintain current view - if we're viewing group posts, stay there
+      if (window.currentSearchQuery === 'group-filter' && window.currentGroupId) {
+        await viewGroupPosts(window.currentGroupId);
+      } else {
+        fetchFeed();
+      }
+    } else {
+      const errorData = await response.json();
+      console.error('Failed to toggle comment like:', errorData.message || 'Unknown error');
+      alert('Failed to like comment: ' + (errorData.message || 'Unknown error'));
+    }
+  } catch (error) {
+    console.error('Error toggling comment like:', error);
+    alert('Error liking comment. Please try again.');
+  }
+}
+
 // Make functions globally accessible
 window.viewGroupPosts = viewGroupPosts;
 window.showAllPosts = showAllPosts;
 window.deleteComment = deleteComment;
+window.likeComment = likeComment;
 $(document).ready(function () {
   console.log('Search functionality initialized');
   
@@ -614,11 +672,20 @@ $(document).ready(function () {
             // Check if current user can delete this comment (comment author or post author)
             const canDeleteComment = (c.user?._id === currentUserId) || (post.author?._id === currentUserId);
             const deleteBtn = canDeleteComment ? `<button onclick="deleteComment('${post._id}', '${c._id}')" class="delete-comment-btn">×</button>` : '';
+            
+            // Check if current user can like this comment (not their own comment)
+            const canLikeComment = c.user?._id !== currentUserId;
+            const likeCount = c.likes?.length || 0;
+            const likeBtn = canLikeComment ? `<button onclick="likeComment('${post._id}', '${c._id}')" class="like-comment-btn">❤️ ${likeCount}</button>` : (likeCount > 0 ? `<span class="comment-likes">❤️ ${likeCount}</span>` : '');
+            
             return `<div class="comment">
               <div class="comment-content">
                 <strong>${c.user?.username || 'Unknown'}:</strong> ${c.text}
               </div>
-              ${deleteBtn}
+              <div class="comment-actions">
+                ${likeBtn}
+                ${deleteBtn}
+              </div>
             </div>`;
           }).join('') || ''}
           <form class="comment-form" onsubmit="return commentOnPost(event, '${post._id}')">
