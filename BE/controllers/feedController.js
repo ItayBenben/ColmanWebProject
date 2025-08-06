@@ -21,6 +21,7 @@ export const getFeed = async (req, res, next) => {
     .populate('author', 'username')
     .populate('likes', 'username')
     .populate('comments.user', 'username')
+    .populate('comments.likes', 'username')
     .populate('group', 'name')
     .sort({ createdAt: -1 });
     

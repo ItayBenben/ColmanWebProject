@@ -225,4 +225,69 @@ export const checkLikeStatus = async (req, res, next) => {
   } catch (err) {
     next(err);
   }
+};
+
+// Toggle like on a comment
+export const toggleCommentLike = async (req, res, next) => {
+  try {
+    const { postId, commentId } = req.params;
+
+    const post = await Post.findById(postId);
+    if (!post) {
+      return res.status(404).json({ message: 'Post not found' });
+    }
+
+    // Find the comment
+    const comment = post.comments.id(commentId);
+    if (!comment) {
+      return res.status(404).json({ message: 'Comment not found' });
+    }
+
+    // Check authorization - same rules as post liking
+    if (post.group) {
+      const group = await Group.findById(post.group);
+      if (!group || !group.members.includes(req.user._id)) {
+        return res.status(403).json({ message: 'Not a group member' });
+      }
+    } else {
+      // For public posts, check if user can interact with the post
+      const author = await User.findById(post.author);
+      const currentUser = await User.findById(req.user._id);
+      
+      if (!author || !currentUser) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+      
+      // Check if user is the author OR mutual friends
+      const isAuthor = post.author.toString() === req.user._id.toString();
+      const isMutualFriends = author.friends.includes(req.user._id) || currentUser.friends.includes(post.author);
+      
+      if (!isAuthor && !isMutualFriends) {
+        return res.status(403).json({ message: 'Not authorized to interact with this post' });
+      }
+    }
+
+    // Initialize likes array if it doesn't exist
+    if (!comment.likes) {
+      comment.likes = [];
+    }
+
+    const isLiked = comment.likes.includes(req.user._id);
+    
+    if (isLiked) {
+      comment.likes.pull(req.user._id);
+    } else {
+      comment.likes.push(req.user._id);
+    }
+    
+    await post.save();
+
+    res.json({
+      message: isLiked ? 'Comment unliked successfully' : 'Comment liked successfully',
+      likesCount: comment.likes.length,
+      isLiked: !isLiked
+    });
+  } catch (err) {
+    next(err);
+  }
 }; 
