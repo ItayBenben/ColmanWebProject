@@ -102,15 +102,7 @@ export const listPosts = async (req, res, next) => {
   }
 };
 
-export const searchPosts = async (req, res, next) => {
-  try {
-    const { q } = req.query;
-    const posts = await Post.find({ content: { $regex: q, $options: 'i' } });
-    res.json(posts);
-  } catch (err) {
-    next(err);
-  }
-};
+
 
 export const groupByGroup = async (req, res, next) => {
   try {

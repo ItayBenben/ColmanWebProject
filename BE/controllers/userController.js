@@ -52,15 +52,7 @@ export const deleteUser = async (req, res, next) => {
   }
 };
 
-export const searchUsers = async (req, res, next) => {
-  try {
-    const { q } = req.query;
-    const users = await User.find({ username: { $regex: q, $options: 'i' } }).select('username email');
-    res.json(users);
-  } catch (err) {
-    next(err);
-  }
-};
+
 
 export const addFriend = async (req, res, next) => {
   try {

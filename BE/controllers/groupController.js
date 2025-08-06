@@ -89,12 +89,4 @@ export const listGroups = async (req, res, next) => {
   }
 };
 
-export const searchGroups = async (req, res, next) => {
-  try {
-    const { q } = req.query;
-    const groups = await Group.find({ name: { $regex: q, $options: 'i' } });
-    res.json(groups);
-  } catch (err) {
-    next(err);
-  }
-}; 
+ 

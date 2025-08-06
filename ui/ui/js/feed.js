@@ -273,11 +273,11 @@ $(document).ready(function () {
     if (!query) return;
 
     $.ajax({
-      url: `http://localhost:5000/api/search`,
-      method: 'POST',
-      contentType: 'application/json',
-      data: JSON.stringify({ query }),
-      xhrFields: { withCredentials: true },
+      url: `http://localhost:5000/api/search/all?query=${encodeURIComponent(query)}`,
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('jwt')}`
+      },
       success: function (data) {
         showSearchResults(data);
       },
@@ -291,38 +291,69 @@ $(document).ready(function () {
     const resultsDiv = $('#search-results');
     resultsDiv.empty();
 
-    const { users = [], groups = [] } = data;
+    if (!data.success || !data.results) {
+      resultsDiv.html('<p>No results found</p>');
+      resultsDiv.removeClass('hidden');
+      return;
+    }
 
+    const { users = [], groups = [], posts = [] } = data.results;
+    let hasResults = false;
+
+    // Show posts
+    posts.forEach(post => {
+      const postDiv = $(`
+        <div class="search-result-item">
+          <span class="search-name" data-id="${post.id}" data-type="post">📝 ${post.content.substring(0, 50)}${post.content.length > 50 ? '...' : ''}</span>
+          <small>by ${post.author} ${post.group ? `in ${post.group}` : ''}</small>
+        </div>
+      `);
+      resultsDiv.append(postDiv);
+      hasResults = true;
+    });
+
+    // Show users
     users.forEach(user => {
       const userDiv = $(`
-        <div>
-          <span class="search-name" data-id="${user._id}" data-type="user">${user.username}</span>
-          ${user.isFriend ? '' : `<button class="friend-btn" data-id="${user._id}">Add Friend</button>`}
+        <div class="search-result-item">
+          <span class="search-name" data-id="${user.id}" data-type="user">👤 ${user.username}</span>
+          <small>${user.email}</small>
         </div>
       `);
       resultsDiv.append(userDiv);
+      hasResults = true;
     });
 
+    // Show groups
     groups.forEach(group => {
-    const groupDiv = $(`
-      <div>
-        <span class="search-name" data-id="${group._id}" data-type="group">${group.name}</span>
-        ${group.isMember ? '' : `<button class="group-btn" data-id="${group._id}">Join Group</button>`}
-      </div>
-    `);
-    resultsDiv.append(groupDiv);
-  });
+      const groupDiv = $(`
+        <div class="search-result-item">
+          <span class="search-name" data-id="${group.id}" data-type="group">👥 ${group.name}</span>
+          <small>${group.description || 'No description'} (${group.memberCount} members)</small>
+        </div>
+      `);
+      resultsDiv.append(groupDiv);
+      hasResults = true;
+    });
 
-  resultsDiv.removeClass('hidden');
-}
-  // Click on user or group name
+    if (!hasResults) {
+      resultsDiv.html('<p>No results found</p>');
+    }
+
+    resultsDiv.removeClass('hidden');
+  }
+  // Click on user, group, or post name
   $(document).on('click', '.search-name', function () {
     const id = $(this).data('id');
     const type = $(this).data('type');
     if (type === 'user') {
       window.location.href = `../user_profile.html?id=${id}`;
-    } else {
+    } else if (type === 'group') {
       window.location.href = `group.html?groupId=${id}`;
+    } else if (type === 'post') {
+      // For posts, we could show them in a modal or redirect to a post view
+      // For now, let's just show an alert with the post content
+      alert('Post clicked! This could open a post view modal.');
     }
   });
 
