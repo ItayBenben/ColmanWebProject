@@ -1,6 +1,6 @@
 import express from 'express';
 import { auth } from '../middleware/auth.js';
-import { createGroup, joinGroup, leaveGroup, updateGroup, deleteGroup, listGroups, searchGroups, getGroup } from '../controllers/groupController.js';
+import { createGroup, joinGroup, leaveGroup, updateGroup, deleteGroup, listGroups, searchGroups, getGroup, addMemberToGroup, removeMemberFromGroup } from '../controllers/groupController.js';
 
 const router = express.Router();
 
@@ -12,5 +12,7 @@ router.put('/:id', auth, updateGroup);
 router.delete('/:id', auth, deleteGroup);
 router.post('/:id/join', auth, joinGroup);
 router.post('/:id/leave', auth, leaveGroup);
+router.post('/:id/members', auth, addMemberToGroup);
+router.delete('/:id/members/:userId', auth, removeMemberFromGroup);
 
 export default router; 

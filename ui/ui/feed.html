@@ -37,6 +37,12 @@
       <span class="close" onclick="closePostModal()">&times;</span>
       <h2>Create New Post</h2>
       <form id="postForm">
+        <div class="post-group-selection">
+          <label for="groupSelect">Post to:</label>
+          <select id="groupSelect" name="group">
+            <option value="">My Feed (Public)</option>
+          </select>
+        </div>
         <textarea name="text" placeholder="Write something..." required></textarea>
         <input type="file" name="media" accept="image/*,video/*" />
         <button type="submit">Post</button>
