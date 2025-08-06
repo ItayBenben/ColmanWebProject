@@ -10,7 +10,7 @@ function getQueryParam(name) {
 
 const token = localStorage.getItem('jwt');
 const currentUserId = localStorage.getItem('userId');
-const profileUserId = getQueryParam('user');
+const profileUserId = getQueryParam('id') || getQueryParam('user');
 
 // Check if user is authenticated
 function checkAuth() {
@@ -198,6 +198,10 @@ document.addEventListener('DOMContentLoaded', async function() {
 
 async function loadUserProfile(userId) {
     try {
+        console.log('Loading user profile for ID:', userId);
+        console.log('Current user ID:', currentUserId);
+        console.log('Token:', token ? 'Present' : 'Missing');
+        
         const res = await fetch(`http://localhost:5000/api/users/${userId}`, {
             headers: { "Authorization": `Bearer ${token}` },
             credentials: 'include'
@@ -214,6 +218,7 @@ async function loadUserProfile(userId) {
         }
         
         const user = await res.json();
+        console.log('Loaded user data:', user);
         
         // Populate profile fields (use correct HTML IDs)
         document.getElementById('user-name').textContent = user.username || 'N/A';
@@ -228,30 +233,54 @@ async function loadUserProfile(userId) {
         }
 
         // Populate friends list
+        console.log('User friends:', user.friends);
         const friendList = document.getElementById('friendList');
         friendList.innerHTML = '';
         if (user.friends && user.friends.length > 0) {
+            console.log('Displaying', user.friends.length, 'friends');
             user.friends.forEach(friend => {
                 const li = document.createElement('li');
                 li.textContent = friend.username || friend.email || 'Unknown';
                 friendList.appendChild(li);
             });
         } else {
+            console.log('No friends to display');
             const li = document.createElement('li');
             li.textContent = 'No friends yet';
             friendList.appendChild(li);
         }
 
         // Populate groups list
+        console.log('User groups:', user.groups);
         const groupList = document.getElementById('groupList');
         groupList.innerHTML = '';
         if (user.groups && user.groups.length > 0) {
+            console.log('Displaying', user.groups.length, 'groups');
             user.groups.forEach(group => {
                 const li = document.createElement('li');
-                li.textContent = group.name || 'Unnamed Group';
+                li.className = 'group-item';
+                
+                // Check if current user is admin of this group
+                const isAdmin = group.admin && group.admin.toString() === currentUserId;
+                
+                li.innerHTML = `
+                    <div class="group-info">
+                        <span class="group-name">${group.name || 'Unnamed Group'}</span>
+                        ${group.description ? `<small class="group-desc">${group.description}</small>` : ''}
+                        ${isAdmin ? '<span class="admin-badge">Admin</span>' : ''}
+                    </div>
+                    <div class="group-actions">
+                        ${isAdmin ? 
+                            `<button onclick="deleteGroup('${group._id}')" class="delete-group-btn">Delete Group</button>` :
+                            `<button onclick="leaveGroup('${group._id}')" class="leave-group-btn">Leave Group</button>`
+                        }
+                    </div>
+                `;
+                
                 groupList.appendChild(li);
             });
         } else {
+            console.log('No groups to display');
             const li = document.createElement('li');
             li.textContent = 'No groups yet';
             groupList.appendChild(li);
@@ -261,6 +290,80 @@ async function loadUserProfile(userId) {
         document.querySelector('.profile-container').innerHTML = '<p>Error loading profile</p>';
     }
 }
+
+// Delete group (admin only)
+async function deleteGroup(groupId) {
+    if (!checkAuth()) return;
+    
+    // Confirm deletion
+    if (!confirm('Are you sure you want to delete this group? This action cannot be undone and will remove all group posts and members.')) {
+        return;
+    }
+    
+    try {
+        const response = await fetch(`http://localhost:5000/api/groups/${groupId}`, {
+            method: "DELETE",
+            headers: {
+                "Authorization": `Bearer ${token}`
+            },
+            credentials: 'include'
+        });
+        
+        if (response.ok) {
+            console.log('Group deleted successfully');
+            alert('Group deleted successfully');
+            // Reload the profile to show updated groups
+            const userId = profileUserId || currentUserId;
+            await loadUserProfile(userId);
+        } else {
+            const errorData = await response.json();
+            console.error('Failed to delete group:', errorData.message || 'Unknown error');
+            alert('Failed to delete group: ' + (errorData.message || 'Unknown error'));
+        }
+    } catch (error) {
+        console.error('Error deleting group:', error);
+        alert('Error deleting group. Please try again.');
+    }
+}
+
+// Leave group (non-admin members)
+async function leaveGroup(groupId) {
+    if (!checkAuth()) return;
+    
+    // Confirm leaving
+    if (!confirm('Are you sure you want to leave this group?')) {
+        return;
+    }
+    
+    try {
+        const response = await fetch(`http://localhost:5000/api/groups/${groupId}/leave`, {
+            method: "POST",
+            headers: {
+                "Authorization": `Bearer ${token}`
+            },
+            credentials: 'include'
+        });
+        
+        if (response.ok) {
+            console.log('Left group successfully');
+            alert('You have left the group');
+            // Reload the profile to show updated groups
+            const userId = profileUserId || currentUserId;
+            await loadUserProfile(userId);
+        } else {
+            const errorData = await response.json();
+            console.error('Failed to leave group:', errorData.message || 'Unknown error');
+            alert('Failed to leave group: ' + (errorData.message || 'Unknown error'));
+        }
+    } catch (error) {
+        console.error('Error leaving group:', error);
+        alert('Error leaving group. Please try again.');
+    }
+}
+
+// Make functions globally accessible
+window.deleteGroup = deleteGroup;
+window.leaveGroup = leaveGroup;
 
 async function updateUserInfo(userId, updateData) {
     try {

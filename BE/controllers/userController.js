@@ -3,10 +3,30 @@ import Group from '../models/Group.js';
 import Post from '../models/Post.js';
 
 export const getUser = async (req, res, next) => {
-  if (req.params.id !== req.user._id.toString()) {
-    return res.status(403).json({ message: 'Forbidden' });
+  try {
+    const user = await User.findById(req.params.id)
+      .populate('friends', 'username email')
+      .populate('groups', 'name description admin')
+      .select('-password');
+    
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    
+    // Allow users to view their own profile or friends' profiles
+    if (req.params.id === req.user._id.toString() || req.user.friends.includes(req.params.id)) {
+      res.json(user);
+    } else {
+      // Return limited info for non-friends
+      res.json({
+        _id: user._id,
+        username: user.username,
+        email: user.email
+      });
+    }
+  } catch (err) {
+    next(err);
   }
-  res.json(req.user);
 };
 
 export const updateUser = async (req, res, next) => {
