@@ -36,7 +36,29 @@ try {
   }
   
   const posts = await res.json();
-  const currentUserId = localStorage.getItem('userId');
+  
+  // Store all posts for filtering
+  if (typeof window.allPosts !== 'undefined') {
+    window.allPosts = posts;
+    if (typeof window.displayPosts === 'function') {
+      window.displayPosts(posts);
+    } else {
+      // Fallback to original display method
+      displayPostsDirectly(posts);
+    }
+  } else {
+    // Fallback to original display method
+    displayPostsDirectly(posts);
+  }
+} catch (error) {
+  console.error('Error fetching feed:', error);
+  const postsContainer = document.getElementById("posts");
+  postsContainer.innerHTML = '<p>Error loading posts. Please try again later.</p>';
+}
+}
+
+// Fallback function for displaying posts (original method)
+function displayPostsDirectly(posts) {
   const postsContainer = document.getElementById("posts");
   postsContainer.innerHTML = "";
 
@@ -45,51 +67,46 @@ try {
     return;
   }
 
-    posts.forEach(post => {
-      const postEl = document.createElement("div");
-      postEl.className = "post";
+  posts.forEach(post => {
+    const postEl = document.createElement("div");
+    postEl.className = "post";
 
-      // Handle media display
-      let mediaContent = '';
-      if (post.files && post.files.length > 0) {
-        post.files.forEach(file => {
-          if (file.fileType === 'image') {
-            mediaContent += `<img src="${file.url}" alt="Post image" style="max-width: 100%; height: auto;" />`;
-          } else if (file.fileType === 'video') {
-            mediaContent += `<video controls src="${file.url}" style="max-width: 100%; height: auto;"></video>`;
-          }
-        });
-      }
+    // Handle media display
+    let mediaContent = '';
+    if (post.files && post.files.length > 0) {
+      post.files.forEach(file => {
+        if (file.fileType === 'image') {
+          mediaContent += `<img src="${file.url}" alt="Post image" style="max-width: 100%; height: auto;" />`;
+        } else if (file.fileType === 'video') {
+          mediaContent += `<video controls src="${file.url}" style="max-width: 100%; height: auto;"></video>`;
+        }
+      });
+    }
 
-      postEl.innerHTML = `
-        <div class="post-header">
-          <strong>${post.author?.username || 'Unknown User'}</strong>
-          <span>${new Date(post.createdAt).toLocaleString()}</span>
-        </div>
-        <div class="post-content">
-          ${post.content ? `<p>${post.content}</p>` : ''}
-          ${mediaContent}
-        </div>
-        <div class="post-meta">
-          <button onclick="likePost('${post._id}')">Like (${post.likes?.length || 0})</button>
-          <span>${post.comments?.length || 0} Comments</span>
-        </div>
-        <div class="comment-section">
-          ${post.comments?.map(c => `<div class="comment"><strong>${c.user?.username || 'Unknown'}:</strong> ${c.text}</div>`).join('') || ''}
-          <form class="comment-form" onsubmit="return commentOnPost(event, '${post._id}')">
-            <input type="text" name="comment" placeholder="Write a comment..." required />
-            <button type="submit">Post</button>
-          </form>
-        </div>
-      `;
+    postEl.innerHTML = `
+      <div class="post-header">
+        <strong>${post.author?.username || 'Unknown User'}</strong>
+        <span>${new Date(post.createdAt).toLocaleString()}</span>
+      </div>
+      <div class="post-content">
+        ${post.content ? `<p>${post.content}</p>` : ''}
+        ${mediaContent}
+      </div>
+      <div class="post-meta">
+        <button onclick="likePost('${post._id}')">Like (${post.likes?.length || 0})</button>
+        <span>${post.comments?.length || 0} Comments</span>
+      </div>
+      <div class="comment-section">
+        ${post.comments?.map(c => `<div class="comment"><strong>${c.user?.username || 'Unknown'}:</strong> ${c.text}</div>`).join('') || ''}
+        <form class="comment-form" onsubmit="return commentOnPost(event, '${post._id}')">
+          <input type="text" name="comment" placeholder="Write a comment..." required />
+          <button type="submit">Post</button>
+        </form>
+      </div>
+    `;
 
-      postsContainer.appendChild(postEl);
-    });
-  } catch (error) {
-    console.error('Error fetching feed:', error);
-    const postsContainer = document.getElementById("posts");
-    postsContainer.innerHTML = '<p>Error loading posts. Please try again later.</p>';
-  }
+    postsContainer.appendChild(postEl);
+  });
 }
 
 function openPostModal() {
@@ -268,91 +285,136 @@ async function fetchFriendsAndGroups() {
   }
 }
 $(document).ready(function () {
+  console.log('Search functionality initialized');
+  
+  let allPosts = []; // Store all posts for filtering
+  let currentSearchQuery = ''; // Track current search
+  
+  // Make displayPosts function globally accessible
+  window.displayPosts = function(posts) {
+    const postsContainer = document.getElementById("posts");
+    postsContainer.innerHTML = "";
+
+    if (posts.length === 0) {
+      if (currentSearchQuery) {
+        postsContainer.innerHTML = `<p>No posts found matching "${currentSearchQuery}". <button onclick="clearSearch()">Show all posts</button></p>`;
+      } else {
+        postsContainer.innerHTML = '<p>No posts available. Be the first to post!</p>';
+      }
+      return;
+    }
+
+    posts.forEach(post => {
+      const postEl = document.createElement("div");
+      postEl.className = "post";
+
+      // Handle media display
+      let mediaContent = '';
+      if (post.files && post.files.length > 0) {
+        post.files.forEach(file => {
+          if (file.fileType === 'image') {
+            mediaContent += `<img src="${file.url}" alt="Post image" style="max-width: 100%; height: auto;" />`;
+          } else if (file.fileType === 'video') {
+            mediaContent += `<video controls src="${file.url}" style="max-width: 100%; height: auto;"></video>`;
+          }
+        });
+      }
+
+      postEl.innerHTML = `
+        <div class="post-header">
+          <strong>${post.author?.username || 'Unknown User'}</strong>
+          <span>${new Date(post.createdAt).toLocaleString()}</span>
+        </div>
+        <div class="post-content">
+          ${post.content ? `<p>${post.content}</p>` : ''}
+          ${mediaContent}
+        </div>
+        <div class="post-meta">
+          <button onclick="likePost('${post._id}')">Like (${post.likes?.length || 0})</button>
+          <span>${post.comments?.length || 0} Comments</span>
+        </div>
+        <div class="comment-section">
+          ${post.comments?.map(c => `<div class="comment"><strong>${c.user?.username || 'Unknown'}:</strong> ${c.text}</div>`).join('') || ''}
+          <form class="comment-form" onsubmit="return commentOnPost(event, '${post._id}')">
+            <input type="text" name="comment" placeholder="Write a comment..." required />
+            <button type="submit">Post</button>
+          </form>
+        </div>
+      `;
+
+      postsContainer.appendChild(postEl);
+    });
+  };
+  
   $('#search-button').on('click', function () {
     const query = $('#search-input').val().trim();
-    if (!query) return;
+    console.log('Search query:', query);
+    
+    if (!query) {
+      console.log('Empty query, showing all posts');
+      currentSearchQuery = '';
+      window.displayPosts(window.allPosts);
+      return;
+    }
 
+    currentSearchQuery = query;
+    console.log('Starting search for:', query);
+
+    // Search for posts only (since we're filtering the feed)
     $.ajax({
-      url: `http://localhost:5000/api/search`,
-      method: 'POST',
-      contentType: 'application/json',
-      data: JSON.stringify({ query }),
+      url: `http://localhost:5000/api/posts/search?q=${encodeURIComponent(query)}`,
+      method: 'GET',
       xhrFields: { withCredentials: true },
-      success: function (data) {
-        showSearchResults(data);
-      },
-      error: function () {
-        alert('Search failed. Please try again.');
-      }
+      headers: { "Authorization": `Bearer ${token}` }
+    }).then(data => {
+      console.log('Posts search result:', data);
+      const searchResults = Array.isArray(data) ? data : [];
+      window.displayPosts(searchResults);
+    }).catch(error => {
+      console.error('Posts search error:', error);
+      // If search fails, show all posts
+      window.displayPosts(window.allPosts);
     });
   });
 
-  function showSearchResults(data) {
-    const resultsDiv = $('#search-results');
-    resultsDiv.empty();
+  // Clear search and show all posts
+  window.clearSearch = function() {
+    console.log('Clearing search manually');
+    $('#search-input').val('');
+    currentSearchQuery = '';
+    window.displayPosts(window.allPosts);
+  };
 
-    const { users = [], groups = [] } = data;
-
-    users.forEach(user => {
-      const userDiv = $(`
-        <div>
-          <span class="search-name" data-id="${user._id}" data-type="user">${user.username}</span>
-          ${user.isFriend ? '' : `<button class="friend-btn" data-id="${user._id}">Add Friend</button>`}
-        </div>
-      `);
-      resultsDiv.append(userDiv);
-    });
-
-    groups.forEach(group => {
-    const groupDiv = $(`
-      <div>
-        <span class="search-name" data-id="${group._id}" data-type="group">${group.name}</span>
-        ${group.isMember ? '' : `<button class="group-btn" data-id="${group._id}">Join Group</button>`}
-      </div>
-    `);
-    resultsDiv.append(groupDiv);
-  });
-
-  resultsDiv.removeClass('hidden');
-}
-  // Click on user or group name
-  $(document).on('click', '.search-name', function () {
-    const id = $(this).data('id');
-    const type = $(this).data('type');
-    if (type === 'user') {
-      window.location.href = `../user_profile.html?id=${id}`;
-    } else {
-      window.location.href = `group.html?groupId=${id}`;
+  // Add search input event listener for real-time search
+  $('#search-input').on('input', function() {
+    const query = $(this).val().trim();
+    if (!query) {
+      console.log('Search cleared, showing all posts');
+      currentSearchQuery = '';
+      window.displayPosts(window.allPosts);
     }
   });
 
-  // Add Friend
-  $(document).on('click', '.friend-btn', function () {
-    const userId = $(this).data('id');
-
-    $.ajax({
-      url: `http://localhost:5000/api/friends/request`,
-      method: 'POST',
-      contentType: 'application/json',
-      data: JSON.stringify({ userId }),
-      xhrFields: { withCredentials: true },
-      success: function () {
-        alert('Friend request sent!');
-      },
-      error: function () {
-        alert('Failed to send request.');
-      }
-    });
-  });
-
-  // Optional: Hide popup when clicking outside
-  $(document).on('click', function (e) {
-    if (!$(e.target).closest('#search-container, #search-popup').length) {
-      $('#search-popup').addClass('hidden');
+  // Add keyup event to handle backspace/delete
+  $('#search-input').on('keyup', function(e) {
+    const query = $(this).val().trim();
+    if (!query) {
+      console.log('Search input empty after keyup, showing all posts');
+      currentSearchQuery = '';
+      window.displayPosts(window.allPosts);
     }
   });
+
+  // Add Enter key support for search
+  $('#search-input').on('keypress', function(e) {
+    if (e.which === 13) { // Enter key
+      $('#search-button').click();
+    }
+  });
+
+  // Store allPosts globally so fetchFeed can access it
+  window.allPosts = allPosts;
 });
-
 
 
 document.addEventListener("DOMContentLoaded", () => {
