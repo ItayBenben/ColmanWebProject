@@ -60,6 +60,138 @@ document.addEventListener('DOMContentLoaded', async function() {
         editProfileForm.addEventListener('submit', submitProfileEdit);
     }
 
+    // Add search functionality
+    $('#search-button').on('click', function () {
+        const query = $('#search-input').val().trim();
+        if (!query) return;
+
+        // Show the search popup
+        $('#search-popup').removeClass('hidden');
+        $('#search-results').html('<p>Searching...</p>');
+
+        // Search for users, posts, and groups
+        Promise.all([
+            // Search users
+            $.ajax({
+                url: `http://localhost:5000/api/users/search?q=${encodeURIComponent(query)}`,
+                method: 'GET',
+                xhrFields: { withCredentials: true },
+                headers: { "Authorization": `Bearer ${token}` }
+            }).catch(() => ({ users: [] })),
+            
+            // Search posts
+            $.ajax({
+                url: `http://localhost:5000/api/posts/search?q=${encodeURIComponent(query)}`,
+                method: 'GET',
+                xhrFields: { withCredentials: true },
+                headers: { "Authorization": `Bearer ${token}` }
+            }).catch(() => ({ posts: [] })),
+            
+            // Search groups
+            $.ajax({
+                url: `http://localhost:5000/api/groups/search?q=${encodeURIComponent(query)}`,
+                method: 'GET',
+                xhrFields: { withCredentials: true },
+                headers: { "Authorization": `Bearer ${token}` }
+            }).catch(() => ({ groups: [] }))
+        ]).then(([userResults, postResults, groupResults]) => {
+            showSearchResults({
+                users: Array.isArray(userResults) ? userResults : [],
+                posts: Array.isArray(postResults) ? postResults : [],
+                groups: Array.isArray(groupResults) ? groupResults : []
+            });
+        }).catch(() => {
+            $('#search-results').html('<p>Search failed. Please try again.</p>');
+        });
+    });
+
+    function showSearchResults(data) {
+        const resultsDiv = $('#search-results');
+        resultsDiv.empty();
+
+        const { users = [], posts = [], groups = [] } = data;
+        let hasResults = false;
+
+        // Display users
+        if (users.length > 0) {
+            hasResults = true;
+            resultsDiv.append('<h4>Users:</h4>');
+            users.forEach(user => {
+                const userDiv = $(`
+                    <div class="search-result-item">
+                        <span class="search-name" data-id="${user._id}" data-type="user">${user.username}</span>
+                        <small>${user.email || ''}</small>
+                    </div>
+                `);
+                resultsDiv.append(userDiv);
+            });
+        }
+
+        // Display posts
+        if (posts.length > 0) {
+            hasResults = true;
+            resultsDiv.append('<h4>Posts:</h4>');
+            posts.forEach(post => {
+                const postDiv = $(`
+                    <div class="search-result-item">
+                        <span class="search-name" data-id="${post._id}" data-type="post">${post.content ? post.content.substring(0, 50) + '...' : 'No content'}</span>
+                        <small>by ${post.author?.username || 'Unknown'}</small>
+                    </div>
+                `);
+                resultsDiv.append(postDiv);
+            });
+        }
+
+        // Display groups
+        if (groups.length > 0) {
+            hasResults = true;
+            resultsDiv.append('<h4>Groups:</h4>');
+            groups.forEach(group => {
+                const groupDiv = $(`
+                    <div class="search-result-item">
+                        <span class="search-name" data-id="${group._id}" data-type="group">${group.name}</span>
+                        <small>${group.description || ''}</small>
+                    </div>
+                `);
+                resultsDiv.append(groupDiv);
+            });
+        }
+
+        if (!hasResults) {
+            resultsDiv.html('<p>No results found.</p>');
+        }
+    }
+
+    // Click on user, post, or group name
+    $(document).on('click', '.search-name', function () {
+        const id = $(this).data('id');
+        const type = $(this).data('type');
+        
+        if (type === 'user') {
+            window.location.href = `user_profile.html?id=${id}`;
+        } else if (type === 'post') {
+            // For posts, we could scroll to the post in the feed or show it in a modal
+            // For now, just close the search popup
+            $('#search-popup').addClass('hidden');
+        } else if (type === 'group') {
+            window.location.href = `group.html?groupId=${id}`;
+        }
+    });
+
+    // Close search popup when clicking outside
+    $(document).on('click', function (e) {
+        if (!$(e.target).closest('#search-container, #search-popup').length) {
+            $('#search-popup').addClass('hidden');
+        }
+    });
+
+    // Close search popup when pressing Escape
+    $(document).on('keydown', function (e) {
+        if (e.key === 'Escape') {
+            $('#search-popup').addClass('hidden');
+        }
+    });
+
 
 });
 

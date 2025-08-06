@@ -17,8 +17,8 @@ export const createGroup = async (req, res, next) => {
 
 export const joinGroup = async (req, res, next) => {
   try {
-    const { groupId } = req.body;
-    const group = await Group.findById(groupId);
+    const { id } = req.params;
+    const group = await Group.findById(id);
     if (!group) return res.status(404).json({ message: 'Group not found' });
     if (group.members.includes(req.user._id)) return res.status(400).json({ message: 'Already a member' });
     group.members.push(req.user._id);
@@ -33,12 +33,12 @@ export const joinGroup = async (req, res, next) => {
 
 export const leaveGroup = async (req, res, next) => {
   try {
-    const { groupId } = req.body;
-    const group = await Group.findById(groupId);
+    const { id } = req.params;
+    const group = await Group.findById(id);
     if (!group) return res.status(404).json({ message: 'Group not found' });
-    group.members = group.members.filter(id => id.toString() !== req.user._id.toString());
+    group.members = group.members.filter(memberId => memberId.toString() !== req.user._id.toString());
     await group.save();
-    req.user.groups = req.user.groups.filter(id => id.toString() !== groupId);
+    req.user.groups = req.user.groups.filter(groupId => groupId.toString() !== id);
     await req.user.save();
     res.json({ message: 'Left group' });
   } catch (err) {
@@ -46,10 +46,21 @@ export const leaveGroup = async (req, res, next) => {
   }
 };
 
+export const getGroup = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const group = await Group.findById(id);
+    if (!group) return res.status(404).json({ message: 'Group not found' });
+    res.json(group);
+  } catch (err) {
+    next(err);
+  }
+};
+
 export const updateGroup = async (req, res, next) => {
   try {
-    const { groupId } = req.params;
-    const group = await Group.findById(groupId);
+    const { id } = req.params;
+    const group = await Group.findById(id);
     if (!group) return res.status(404).json({ message: 'Group not found' });
     if (group.admin.toString() !== req.user._id.toString()) return res.status(403).json({ message: 'Not group admin' });
     Object.assign(group, req.body);
@@ -62,8 +73,8 @@ export const updateGroup = async (req, res, next) => {
 
 export const deleteGroup = async (req, res, next) => {
   try {
-    const { groupId } = req.params;
-    const group = await Group.findById(groupId);
+    const { id } = req.params;
+    const group = await Group.findById(id);
     if (!group) return res.status(404).json({ message: 'Group not found' });
     if (group.admin.toString() !== req.user._id.toString()) return res.status(403).json({ message: 'Not group admin' });
     // Remove group from all users' groups arrays
