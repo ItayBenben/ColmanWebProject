@@ -7,8 +7,13 @@ export const createGroup = async (req, res, next) => {
     const { name, description } = req.body;
     const group = new Group({ name, description, admin: req.user._id, members: [req.user._id] });
     await group.save();
-    req.user.groups.push(group._id);
-    await req.user.save();
+    
+    // Use findByIdAndUpdate to avoid validation issues
+    await User.findByIdAndUpdate(
+      req.user._id,
+      { $push: { groups: group._id } }
+    );
+    
     res.status(201).json(group);
   } catch (err) {
     next(err);
@@ -23,8 +28,13 @@ export const joinGroup = async (req, res, next) => {
     if (group.members.includes(req.user._id)) return res.status(400).json({ message: 'Already a member' });
     group.members.push(req.user._id);
     await group.save();
-    req.user.groups.push(group._id);
-    await req.user.save();
+    
+    // Use findByIdAndUpdate to avoid validation issues
+    await User.findByIdAndUpdate(
+      req.user._id,
+      { $push: { groups: group._id } }
+    );
+    
     res.json({ message: 'Joined group' });
   } catch (err) {
     next(err);
@@ -36,10 +46,17 @@ export const leaveGroup = async (req, res, next) => {
     const { id } = req.params;
     const group = await Group.findById(id);
     if (!group) return res.status(404).json({ message: 'Group not found' });
+    
+    // Remove user from group members
     group.members = group.members.filter(memberId => memberId.toString() !== req.user._id.toString());
     await group.save();
-    req.user.groups = req.user.groups.filter(groupId => groupId.toString() !== id);
-    await req.user.save();
+    
+    // Use findByIdAndUpdate to avoid validation issues
+    await User.findByIdAndUpdate(
+      req.user._id,
+      { $pull: { groups: id } }
+    );
+    
     res.json({ message: 'Left group' });
   } catch (err) {
     next(err);

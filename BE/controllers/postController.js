@@ -31,7 +31,7 @@ export const createPost = async (req, res, next) => {
 
 export const getPost = async (req, res, next) => {
   try {
-    const post = await Post.findById(req.params.postId).populate('author', 'username').populate('group', 'name');
+    const post = await Post.findById(req.params.id).populate('author', 'username').populate('group', 'name');
     if (!post) return res.status(404).json({ message: 'Post not found' });
     if (post.group) {
       const group = await Group.findById(post.group);
@@ -50,7 +50,7 @@ export const getPost = async (req, res, next) => {
 
 export const updatePost = async (req, res, next) => {
   try {
-    const post = await Post.findById(req.params.postId);
+    const post = await Post.findById(req.params.id);
     if (!post) return res.status(404).json({ message: 'Post not found' });
     if (post.author.toString() !== req.user._id.toString()) return res.status(403).json({ message: 'Not post owner' });
     Object.assign(post, req.body);
@@ -64,7 +64,7 @@ export const updatePost = async (req, res, next) => {
 
 export const deletePost = async (req, res, next) => {
   try {
-    const post = await Post.findById(req.params.postId);
+    const post = await Post.findById(req.params.id);
     if (!post) return res.status(404).json({ message: 'Post not found' });
     if (post.author.toString() !== req.user._id.toString()) return res.status(403).json({ message: 'Not post owner' });
     if (post.group) {
