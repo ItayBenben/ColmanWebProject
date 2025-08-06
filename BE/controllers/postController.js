@@ -4,7 +4,7 @@ import User from '../models/User.js';
 
 export const createPost = async (req, res, next) => {
   try {
-    const { content, type, imageUrl, videoUrl, groupId } = req.body;
+    const { content, type, files, groupId } = req.body;
     let group = null;
     if (groupId) {
       group = await Group.findById(groupId);
@@ -16,8 +16,7 @@ export const createPost = async (req, res, next) => {
       group: groupId,
       content,
       type,
-      imageUrl,
-      videoUrl
+      files: files || []
     });
     await post.save();
     if (group) {

@@ -49,15 +49,26 @@ try {
       const postEl = document.createElement("div");
       postEl.className = "post";
 
+      // Handle media display
+      let mediaContent = '';
+      if (post.files && post.files.length > 0) {
+        post.files.forEach(file => {
+          if (file.fileType === 'image') {
+            mediaContent += `<img src="${file.url}" alt="Post image" style="max-width: 100%; height: auto;" />`;
+          } else if (file.fileType === 'video') {
+            mediaContent += `<video controls src="${file.url}" style="max-width: 100%; height: auto;"></video>`;
+          }
+        });
+      }
+
       postEl.innerHTML = `
         <div class="post-header">
           <strong>${post.author?.username || 'Unknown User'}</strong>
           <span>${new Date(post.createdAt).toLocaleString()}</span>
         </div>
         <div class="post-content">
-          ${post.type === 'image' ? `<img src="${post.imageUrl}" />` :
-            post.type === 'video' ? `<video controls src="${post.videoUrl}"></video>` :
-            `<p>${post.content}</p>`}
+          ${post.content ? `<p>${post.content}</p>` : ''}
+          ${mediaContent}
         </div>
         <div class="post-meta">
           <button onclick="likePost('${post._id}')">Like (${post.likes?.length || 0})</button>
@@ -98,17 +109,27 @@ document.getElementById("postForm").addEventListener("submit", async function(e)
   const text = formData.get('text');
   const media = formData.get('media');
   
-  // Prepare the post data according to backend expectations
+  // Prepare the post data
   const postData = {
     content: text,
     type: 'text'
   };
   
-  // If there's media, we'll need to handle file upload separately
-  // For now, let's just send the text content
+  // If there's media, convert to base64 and add to post data
   if (media && media.size > 0) {
-    // TODO: Implement file upload handling
-    console.log('File upload not implemented yet');
+    postData.type = 'media';
+    
+    try {
+      // Convert file to base64
+      const base64 = await convertFileToBase64(media);
+      postData.files = [{
+        url: base64,
+        fileType: media.type.startsWith('image/') ? 'image' : 'video'
+      }];
+    } catch (error) {
+      console.error('Error converting file to base64:', error);
+      return;
+    }
   }
 
   try {
@@ -125,6 +146,8 @@ document.getElementById("postForm").addEventListener("submit", async function(e)
     if (response.ok) {
       closePostModal();
       fetchFeed();
+      // Reset the form
+      this.reset();
     } else {
       console.error('Failed to create post');
     }
@@ -132,6 +155,16 @@ document.getElementById("postForm").addEventListener("submit", async function(e)
     console.error('Error creating post:', error);
   }
 });
+
+// Helper function to convert file to base64
+function convertFileToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
 
 async function likePost(postId) {
   if (!checkAuth()) return;
