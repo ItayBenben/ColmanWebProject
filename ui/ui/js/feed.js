@@ -83,10 +83,16 @@ function displayPostsDirectly(posts) {
       });
     }
 
+    // Check if current user is the author of this post
+    const currentUserId = localStorage.getItem('userId');
+    const isOwner = post.author?._id === currentUserId;
+    const deleteButton = isOwner ? `<button onclick="deletePost('${post._id}')" class="delete-btn">Delete</button>` : '';
+
     postEl.innerHTML = `
       <div class="post-header">
         <strong>${post.author?.username || 'Unknown User'}</strong>
         <span>${new Date(post.createdAt).toLocaleString()}</span>
+        ${deleteButton}
       </div>
       <div class="post-content">
         ${post.content ? `<p>${post.content}</p>` : ''}
@@ -233,6 +239,38 @@ async function commentOnPost(event, postId) {
   return false;
 }
 
+async function deletePost(postId) {
+  if (!checkAuth()) return;
+  
+  // Confirm deletion
+  if (!confirm('Are you sure you want to delete this post? This action cannot be undone.')) {
+    return;
+  }
+  
+  try {
+    const response = await fetch(`http://localhost:5000/api/posts/${postId}`, {
+      method: "DELETE",
+      headers: {
+        "Authorization": `Bearer ${token}`
+      },
+      credentials: 'include'
+    });
+    
+    if (response.ok) {
+      console.log('Post deleted successfully');
+      // Refresh the feed to show updated posts
+      fetchFeed();
+    } else {
+      const errorData = await response.json();
+      console.error('Failed to delete post:', errorData.message || 'Unknown error');
+      alert('Failed to delete post: ' + (errorData.message || 'Unknown error'));
+    }
+  } catch (error) {
+    console.error('Error deleting post:', error);
+    alert('Error deleting post. Please try again.');
+  }
+}
+
 async function fetchFriendsAndGroups() {
   if (!checkAuth()) return;
 
@@ -320,10 +358,16 @@ $(document).ready(function () {
         });
       }
 
+      // Check if current user is the author of this post
+      const currentUserId = localStorage.getItem('userId');
+      const isOwner = post.author?._id === currentUserId;
+      const deleteButton = isOwner ? `<button onclick="deletePost('${post._id}')" class="delete-btn">Delete</button>` : '';
+
       postEl.innerHTML = `
         <div class="post-header">
           <strong>${post.author?.username || 'Unknown User'}</strong>
           <span>${new Date(post.createdAt).toLocaleString()}</span>
+          ${deleteButton}
         </div>
         <div class="post-content">
           ${post.content ? `<p>${post.content}</p>` : ''}
