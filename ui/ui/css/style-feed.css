@@ -3,52 +3,118 @@ body {
   margin: 0;
   padding: 0;
   background: #f0f2f5;
+  font-size: 15px;
 }
 
-.navbar {
+.navbar, .navbar-brand, .navbar-nav .nav-link {
+  font-size: 1rem !important;
+  padding-top: 0.3rem !important;
+  padding-bottom: 0.3rem !important;
+}
+
+#header-container .navbar {
+  min-height: 48px;
+}
+
+#search-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 0.5rem 0 1rem 0;
+  gap: 0.3rem;
+}
+
+#search-container input {
+  padding: 0.3rem 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  width: 220px;
+  max-width: 40%;
+  font-size: 0.95rem;
+}
+
+#search-container button {
+  padding: 0.3rem 0.8rem;
+  border: 1px solid #ccc;
   background-color: #4267b2;
   color: white;
-  padding: 1rem;
-  font-size: 1.5rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.95rem;
+}
+
+#search-container button:hover {
+  background-color: #365899;
+}
+
+#search-popup {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: white;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  z-index: 1000;
+  max-width: 350px;
+  width: 100%;
+}
+
+#search-popup.hidden {
+  display: none;
+}
+
+#search-results {
+  padding: 0.7rem;
+  max-height: 220px;
+  overflow-y: auto;
 }
 
 .container {
   display: flex;
-  margin: 1rem;
+  margin: 0.5rem auto;
+  max-width: 1100px;
+  width: 95%;
 }
 
 .sidebar {
-  width: 20%;
-  margin-right: 2rem;
+  width: 16%;
+  min-width: 120px;
+  margin-right: 1.2rem;
+  font-size: 0.97rem;
 }
 
 .feed {
-  width: 80%;
+  width: 84%;
 }
 
 .feed button {
-  padding: 0.5rem 1rem;
-  margin-bottom: 1rem;
+  padding: 0.35rem 0.8rem;
+  margin-bottom: 0.7rem;
   background-color: #4267b2;
   color: white;
   border: none;
   border-radius: 5px;
   cursor: pointer;
+  font-size: 0.97rem;
 }
 
 .post {
   background: white;
-  padding: 1rem;
-  margin-bottom: 1rem;
-  border-radius: 8px;
-  box-shadow: 0 0 5px rgba(0,0,0,0.1);
+  padding: 0.7rem 1rem;
+  margin-bottom: 0.7rem;
+  border-radius: 7px;
+  box-shadow: 0 0 3px rgba(0,0,0,0.07);
+  font-size: 0.97rem;
 }
 
 .post-header {
   display: flex;
   justify-content: space-between;
   font-weight: bold;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.3rem;
+  font-size: 1rem;
 }
 
 .post-content img,
@@ -56,48 +122,51 @@ body {
   max-width: 100%;
   height: auto;
   display: block;
-  margin-top: 0.5rem;
+  margin-top: 0.3rem;
 }
 
 .post-meta {
-  margin-top: 0.5rem;
-  font-size: 0.9rem;
+  margin-top: 0.3rem;
+  font-size: 0.92rem;
   color: gray;
   display: flex;
   justify-content: space-between;
 }
 
 .comment-section {
-  margin-top: 1rem;
+  margin-top: 0.7rem;
 }
 
 .comment {
   background: #f5f5f5;
-  padding: 0.5rem;
+  padding: 0.3rem 0.5rem;
   border-radius: 5px;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.3rem;
+  font-size: 0.95rem;
 }
 
 .comment-form {
   display: flex;
-  margin-top: 0.5rem;
+  margin-top: 0.3rem;
 }
 
 .comment-form input {
   flex: 1;
-  padding: 0.4rem;
+  padding: 0.3rem;
   border: 1px solid #ccc;
   border-radius: 5px;
+  font-size: 0.95rem;
 }
 
 .comment-form button {
-  margin-left: 0.5rem;
-  padding: 0.4rem 0.8rem;
+  margin-left: 0.3rem;
+  padding: 0.3rem 0.7rem;
   background: #4267b2;
   color: white;
   border: none;
   border-radius: 5px;
   cursor: pointer;
+  font-size: 0.95rem;
 }
 
 .modal {
@@ -118,17 +187,18 @@ body {
 
 .modal-content {
   background: white;
-  padding: 2rem;
+  padding: 1.2rem;
   border-radius: 10px;
   width: 100%;
-  max-width: 500px;
+  max-width: 400px;
   position: relative;
 }
 
 .modal-content textarea {
   width: 100%;
-  height: 100px;
-  margin-bottom: 1rem;
+  height: 80px;
+  margin-bottom: 0.7rem;
+  font-size: 0.97rem;
 }
 
 .modal-content .close {
@@ -136,7 +206,7 @@ body {
   right: 1rem;
   top: 1rem;
   cursor: pointer;
-  font-size: 1.5rem;
+  font-size: 1.2rem;
 }
 .search-bar {
   display: flex;
