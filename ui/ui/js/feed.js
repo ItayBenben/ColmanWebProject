@@ -103,7 +103,17 @@ function displayPostsDirectly(posts) {
         <span>${post.comments?.length || 0} Comments</span>
       </div>
       <div class="comment-section">
-        ${post.comments?.map(c => `<div class="comment"><strong>${c.user?.username || 'Unknown'}:</strong> ${c.text}</div>`).join('') || ''}
+        ${post.comments?.map(c => {
+          // Check if current user can delete this comment (comment author or post author)
+          const canDeleteComment = (c.user?._id === currentUserId) || (post.author?._id === currentUserId);
+          const deleteBtn = canDeleteComment ? `<button onclick="deleteComment('${post._id}', '${c._id}')" class="delete-comment-btn">×</button>` : '';
+          return `<div class="comment">
+            <div class="comment-content">
+              <strong>${c.user?.username || 'Unknown'}:</strong> ${c.text}
+            </div>
+            ${deleteBtn}
+          </div>`;
+        }).join('') || ''}
         <form class="comment-form" onsubmit="return commentOnPost(event, '${post._id}')">
           <input type="text" name="comment" placeholder="Write a comment..." required />
           <button type="submit">Post</button>
@@ -271,6 +281,37 @@ async function deletePost(postId) {
   }
 }
 
+async function deleteComment(postId, commentId) {
+  if (!checkAuth()) return;
+  
+  // Confirm deletion
+  if (!confirm('Are you sure you want to delete this comment?')) {
+    return;
+  }
+  
+  try {
+    const response = await fetch(`http://localhost:5000/api/posts/${postId}/comments/${commentId}`, {
+      method: "DELETE",
+      headers: {
+        "Authorization": `Bearer ${token}`
+      },
+      credentials: 'include'
+    });
+    
+    if (response.ok) {
+      console.log('Comment deleted successfully');
+      fetchFeed(); // Refresh feed to show updated comments
+    } else {
+      const errorData = await response.json();
+      console.error('Failed to delete comment:', errorData.message || 'Unknown error');
+      alert('Failed to delete comment: ' + (errorData.message || 'Unknown error'));
+    }
+  } catch (error) {
+    console.error('Error deleting comment:', error);
+    alert('Error deleting comment. Please try again.');
+  }
+}
+
 async function fetchFriendsAndGroups() {
   if (!checkAuth()) return;
 
@@ -378,7 +419,17 @@ $(document).ready(function () {
           <span>${post.comments?.length || 0} Comments</span>
         </div>
         <div class="comment-section">
-          ${post.comments?.map(c => `<div class="comment"><strong>${c.user?.username || 'Unknown'}:</strong> ${c.text}</div>`).join('') || ''}
+          ${post.comments?.map(c => {
+            // Check if current user can delete this comment (comment author or post author)
+            const canDeleteComment = (c.user?._id === currentUserId) || (post.author?._id === currentUserId);
+            const deleteBtn = canDeleteComment ? `<button onclick="deleteComment('${post._id}', '${c._id}')" class="delete-comment-btn">×</button>` : '';
+            return `<div class="comment">
+              <div class="comment-content">
+                <strong>${c.user?.username || 'Unknown'}:</strong> ${c.text}
+              </div>
+              ${deleteBtn}
+            </div>`;
+          }).join('') || ''}
           <form class="comment-form" onsubmit="return commentOnPost(event, '${post._id}')">
             <input type="text" name="comment" placeholder="Write a comment..." required />
             <button type="submit">Post</button>
