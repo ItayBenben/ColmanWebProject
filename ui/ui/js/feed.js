@@ -353,7 +353,7 @@ $(document).ready(function () {
     if (!query) {
       console.log('Empty query, showing all posts');
       currentSearchQuery = '';
-      window.displayPosts(allPosts);
+      window.displayPosts(window.allPosts);
       return;
     }
 
@@ -373,23 +373,35 @@ $(document).ready(function () {
     }).catch(error => {
       console.error('Posts search error:', error);
       // If search fails, show all posts
-      window.displayPosts(allPosts);
+      window.displayPosts(window.allPosts);
     });
   });
 
   // Clear search and show all posts
   window.clearSearch = function() {
+    console.log('Clearing search manually');
     $('#search-input').val('');
     currentSearchQuery = '';
-    window.displayPosts(allPosts);
+    window.displayPosts(window.allPosts);
   };
 
   // Add search input event listener for real-time search
   $('#search-input').on('input', function() {
     const query = $(this).val().trim();
     if (!query) {
+      console.log('Search cleared, showing all posts');
       currentSearchQuery = '';
-      window.displayPosts(allPosts);
+      window.displayPosts(window.allPosts);
+    }
+  });
+
+  // Add keyup event to handle backspace/delete
+  $('#search-input').on('keyup', function(e) {
+    const query = $(this).val().trim();
+    if (!query) {
+      console.log('Search input empty after keyup, showing all posts');
+      currentSearchQuery = '';
+      window.displayPosts(window.allPosts);
     }
   });
 
