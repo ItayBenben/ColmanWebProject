@@ -61,7 +61,7 @@ $(document).ready(function () {
                     localStorage.setItem('username', data.user.username);
                 }
                 
-                //postFB(`A new member has joined us! Welcome ${username}!`);
+                // postFB(`A new member has joined us! Welcome ${username}!`);
                 window.location.href = 'login.html';
             },
             error: function (jqXHR) {
