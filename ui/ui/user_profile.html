@@ -23,6 +23,10 @@
             <h2>Friends</h2>
             <ul id="friendList"></ul>
             <h2>Groups</h2>
+            <div class="groups-header">
+                <button id="createGroupBtn" class="create-group-btn">+ Create Group</button>
+                <button id="joinGroupBtn" class="join-group-btn">Join Group</button>
+            </div>
             <ul id="groupList"></ul>
         </aside>
         <div class="profile-center-wrapper">
@@ -68,6 +72,52 @@
                 <input type="text" id="editLocation" name="location" />
                 <button type="submit">Save Changes</button>
             </form>
+        </div>
+    </div>
+
+    <!-- Create Group Modal -->
+    <div id="createGroupModal" class="modal hidden">
+        <div class="modal-content">
+            <span class="close" onclick="closeCreateGroupModal()">&times;</span>
+            <h2>Create New Group</h2>
+            <form id="createGroupForm">
+                <label>Group Name:</label>
+                <input type="text" id="groupName" name="name" required />
+                <label>Description:</label>
+                <textarea id="groupDescription" name="description" rows="3" placeholder="Optional group description..."></textarea>
+                <button type="submit">Create Group</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Join Group Modal -->
+    <div id="joinGroupModal" class="modal hidden">
+        <div class="modal-content">
+            <span class="close" onclick="closeJoinGroupModal()">&times;</span>
+            <h2>Join a Group</h2>
+            <div class="search-groups">
+                <input type="text" id="groupSearchInput" placeholder="Search for groups..." />
+                <button onclick="searchGroups()">Search</button>
+            </div>
+            <div id="groupSearchResults" class="search-results"></div>
+        </div>
+    </div>
+
+    <!-- Manage Group Members Modal -->
+    <div id="manageMembersModal" class="modal hidden">
+        <div class="modal-content">
+            <span class="close" onclick="closeMembersModal()">&times;</span>
+            <h2>Manage Group Members</h2>
+            <div class="add-member-section">
+                <h3>Add New Member</h3>
+                <input type="text" id="memberSearchInput" placeholder="Search for users..." />
+                <button onclick="searchUsers()">Search</button>
+                <div id="userSearchResults" class="search-results"></div>
+            </div>
+            <div class="current-members-section">
+                <h3>Current Members</h3>
+                <div id="currentMembers"></div>
+            </div>
         </div>
     </div>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>

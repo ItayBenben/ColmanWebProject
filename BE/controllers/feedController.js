@@ -8,10 +8,14 @@ export const getFeed = async (req, res, next) => {
     const friendIds = user.friends.map(f => f._id);
     const groupIds = user.groups.map(g => g._id);
     const posts = await Post.find({
-      $or: [
-        { author: { $in: friendIds } },
-        { group: { $in: groupIds } },
-        { author: req.user._id }
+      $and: [
+        { group: null }, // Only public posts (not in any group)
+        {
+          $or: [
+            { author: { $in: friendIds } }, // Friends' public posts
+            { author: req.user._id }        // Your own public posts
+          ]
+        }
       ]
     })
     .populate('author', 'username')

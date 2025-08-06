@@ -103,7 +103,17 @@ function displayPostsDirectly(posts) {
         <span>${post.comments?.length || 0} Comments</span>
       </div>
       <div class="comment-section">
-        ${post.comments?.map(c => `<div class="comment"><strong>${c.user?.username || 'Unknown'}:</strong> ${c.text}</div>`).join('') || ''}
+        ${post.comments?.map(c => {
+          // Check if current user can delete this comment (comment author or post author)
+          const canDeleteComment = (c.user?._id === currentUserId) || (post.author?._id === currentUserId);
+          const deleteBtn = canDeleteComment ? `<button onclick="deleteComment('${post._id}', '${c._id}')" class="delete-comment-btn">×</button>` : '';
+          return `<div class="comment">
+            <div class="comment-content">
+              <strong>${c.user?.username || 'Unknown'}:</strong> ${c.text}
+            </div>
+            ${deleteBtn}
+          </div>`;
+        }).join('') || ''}
         <form class="comment-form" onsubmit="return commentOnPost(event, '${post._id}')">
           <input type="text" name="comment" placeholder="Write a comment..." required />
           <button type="submit">Post</button>
@@ -115,9 +125,46 @@ function displayPostsDirectly(posts) {
   });
 }
 
-function openPostModal() {
+async function openPostModal() {
   if (!checkAuth()) return;
+  
+  // Populate group dropdown
+  await populateGroupDropdown();
+  
   document.getElementById("postModal").classList.remove("hidden");
+}
+
+// Populate the group dropdown with user's groups
+async function populateGroupDropdown() {
+  const groupSelect = document.getElementById('groupSelect');
+  
+  // Reset dropdown
+  groupSelect.innerHTML = '<option value="">My Feed (Public)</option>';
+  
+  try {
+    const userId = localStorage.getItem('userId');
+    const response = await fetch(`http://localhost:5000/api/users/${userId}`, {
+      headers: {
+        "Authorization": `Bearer ${token}`
+      },
+      credentials: 'include'
+    });
+    
+    if (response.ok) {
+      const user = await response.json();
+      
+      if (user.groups && user.groups.length > 0) {
+        user.groups.forEach(group => {
+          const option = document.createElement('option');
+          option.value = group._id;
+          option.textContent = group.name || 'Unnamed Group';
+          groupSelect.appendChild(option);
+        });
+      }
+    }
+  } catch (error) {
+    console.error('Error loading groups for post creation:', error);
+  }
 }
 
 function closePostModal() {
@@ -131,12 +178,18 @@ document.getElementById("postForm").addEventListener("submit", async function(e)
   const formData = new FormData(this);
   const text = formData.get('text');
   const media = formData.get('media');
+  const selectedGroup = formData.get('group');
   
   // Prepare the post data
   const postData = {
     content: text,
     type: 'text'
   };
+  
+  // Add group to post data if selected
+  if (selectedGroup) {
+    postData.group = selectedGroup;
+  }
   
   // If there's media, convert to base64 and add to post data
   if (media && media.size > 0) {
@@ -228,15 +281,62 @@ async function commentOnPost(event, postId) {
     });
     
     if (response.ok) {
-      fetchFeed();
+      form.reset(); // Clear the comment input
+      
+      // Maintain current view - if we're viewing group posts, stay there
+      if (window.currentSearchQuery === 'group-filter' && window.currentGroupId) {
+        await viewGroupPosts(window.currentGroupId);
+      } else {
+        fetchFeed();
+      }
     } else {
-      console.error('Failed to add comment');
+      const errorData = await response.json();
+      console.error('Failed to add comment:', errorData.message || 'Unknown error');
+      alert('Failed to add comment: ' + (errorData.message || 'Unknown error'));
     }
   } catch (error) {
     console.error('Error adding comment:', error);
+    alert('Error adding comment. Please check your connection and try again.');
   }
   
   return false;
+}
+
+async function deleteComment(postId, commentId) {
+  if (!checkAuth()) return;
+  
+  // Confirm deletion
+  if (!confirm('Are you sure you want to delete this comment?')) {
+    return;
+  }
+  
+  try {
+    const response = await fetch(`http://localhost:5000/api/posts/${postId}/comments/${commentId}`, {
+      method: "DELETE",
+      headers: {
+        "Authorization": `Bearer ${token}`
+      },
+      credentials: 'include'
+    });
+    
+    if (response.ok) {
+      console.log('Comment deleted successfully');
+      
+      // Maintain current view - if we're viewing group posts, stay there
+      if (window.currentSearchQuery === 'group-filter' && window.currentGroupId) {
+        await viewGroupPosts(window.currentGroupId);
+      } else {
+        fetchFeed();
+      }
+    } else {
+      const errorData = await response.json();
+      console.error('Failed to delete comment:', errorData.message || 'Unknown error');
+      alert('Failed to delete comment: ' + (errorData.message || 'Unknown error'));
+    }
+  } catch (error) {
+    console.error('Error deleting comment:', error);
+    alert('Error deleting comment. Please try again.');
+  }
 }
 
 async function deletePost(postId) {
@@ -310,7 +410,23 @@ async function fetchFriendsAndGroups() {
     if (user.groups && user.groups.length > 0) {
       user.groups.forEach(group => {
         const li = document.createElement("li");
-        li.textContent = group.name || 'Unnamed Group';
+        li.className = 'group-item';
+        
+        // Check if current user is admin of this group
+        const currentUserId = localStorage.getItem('userId');
+        const isAdmin = group.admin && group.admin.toString() === currentUserId;
+        
+        li.innerHTML = `
+          <div class="group-info">
+            <span class="group-name">${group.name || 'Unnamed Group'}</span>
+            ${group.description ? `<small class="group-desc">${group.description}</small>` : ''}
+            ${isAdmin ? '<span class="admin-badge">Admin</span>' : ''}
+          </div>
+          <div class="group-actions">
+            <button onclick="viewGroupPosts('${group._id}')" class="view-group-btn">View Posts</button>
+          </div>
+        `;
+        
         groupList.appendChild(li);
       });
     } else {
@@ -322,6 +438,91 @@ async function fetchFriendsAndGroups() {
     console.error('Error fetching friends and groups:', error);
   }
 }
+
+// View posts from a specific group
+async function viewGroupPosts(groupId) {
+  if (!checkAuth()) return;
+  
+  try {
+    const response = await fetch(`http://localhost:5000/api/posts?groupId=${groupId}`, {
+      headers: {
+        "Authorization": `Bearer ${token}`
+      },
+      credentials: 'include'
+    });
+    
+    if (response.ok) {
+      const groupPosts = await response.json();
+      console.log('Group posts:', groupPosts);
+      
+      // Display only group posts in the feed
+      if (window.displayPosts) {
+        window.displayPosts(groupPosts);
+      } else {
+        displayPostsDirectly(groupPosts);
+      }
+      
+      // Show a message and button to return to full feed
+      showGroupFilterMessage(groupPosts.length);
+      
+      // Update search state to show we're filtering by group
+      window.currentSearchQuery = 'group-filter';
+      window.currentGroupId = groupId;
+    } else {
+      console.error('Failed to fetch group posts');
+      alert('Failed to load group posts');
+    }
+  } catch (error) {
+    console.error('Error fetching group posts:', error);
+    alert('Error loading group posts. Please try again.');
+  }
+}
+
+// Show message when filtering by group
+function showGroupFilterMessage(postCount) {
+  const postsContainer = document.getElementById("posts");
+  
+  // Create filter message element
+  const filterMessage = document.createElement("div");
+  filterMessage.id = "group-filter-message";
+  filterMessage.className = "group-filter-message";
+  filterMessage.innerHTML = `
+    <div class="filter-info">
+      <span>Showing ${postCount} group post${postCount !== 1 ? 's' : ''}</span>
+      <button onclick="showAllPosts()" class="show-all-btn">Show Feed Posts</button>
+    </div>
+  `;
+  
+  // Remove existing filter message if present
+  const existingMessage = document.getElementById("group-filter-message");
+  if (existingMessage) {
+    existingMessage.remove();
+  }
+  
+  // Insert at the beginning of posts container
+  postsContainer.insertBefore(filterMessage, postsContainer.firstChild);
+}
+
+// Show all posts (return to full feed)
+async function showAllPosts() {
+  // Remove filter message
+  const filterMessage = document.getElementById("group-filter-message");
+  if (filterMessage) {
+    filterMessage.remove();
+  }
+  
+  // Reset search state
+  window.currentSearchQuery = '';
+  window.currentGroupId = null;
+  
+  // Fetch and display full feed
+  await fetchFeed();
+}
+
+// Make functions globally accessible
+window.viewGroupPosts = viewGroupPosts;
+window.showAllPosts = showAllPosts;
+window.deleteComment = deleteComment;
 $(document).ready(function () {
   console.log('Search functionality initialized');
   
@@ -378,7 +579,17 @@ $(document).ready(function () {
           <span>${post.comments?.length || 0} Comments</span>
         </div>
         <div class="comment-section">
-          ${post.comments?.map(c => `<div class="comment"><strong>${c.user?.username || 'Unknown'}:</strong> ${c.text}</div>`).join('') || ''}
+          ${post.comments?.map(c => {
+            // Check if current user can delete this comment (comment author or post author)
+            const canDeleteComment = (c.user?._id === currentUserId) || (post.author?._id === currentUserId);
+            const deleteBtn = canDeleteComment ? `<button onclick="deleteComment('${post._id}', '${c._id}')" class="delete-comment-btn">×</button>` : '';
+            return `<div class="comment">
+              <div class="comment-content">
+                <strong>${c.user?.username || 'Unknown'}:</strong> ${c.text}
+              </div>
+              ${deleteBtn}
+            </div>`;
+          }).join('') || ''}
           <form class="comment-form" onsubmit="return commentOnPost(event, '${post._id}')">
             <input type="text" name="comment" placeholder="Write a comment..." required />
             <button type="submit">Post</button>

@@ -4,7 +4,7 @@ import User from '../models/User.js';
 
 export const createPost = async (req, res, next) => {
   try {
-    const { content, type, files, groupId } = req.body;
+    const { content, type, files, group: groupId } = req.body;
     let group = null;
     if (groupId) {
       group = await Group.findById(groupId);
@@ -87,14 +87,29 @@ export const listPosts = async (req, res, next) => {
       const group = await Group.findById(req.query.groupId);
       if (!group) return res.status(404).json({ message: 'Group not found' });
       if (!group.members.includes(req.user._id)) return res.status(403).json({ message: 'Not a group member' });
-      posts = await Post.find({ group: req.query.groupId });
+      posts = await Post.find({ group: req.query.groupId })
+        .populate('author', 'username')
+        .populate('likes', 'username')
+        .populate('comments.user', 'username')
+        .populate('group', 'name')
+        .sort({ createdAt: -1 });
     } else if (req.query.userId) {
       if (req.query.userId !== req.user._id.toString() && !req.user.friends.includes(req.query.userId)) {
         return res.status(403).json({ message: 'Not a friend' });
       }
-      posts = await Post.find({ author: req.query.userId });
+      posts = await Post.find({ author: req.query.userId })
+        .populate('author', 'username')
+        .populate('likes', 'username')
+        .populate('comments.user', 'username')
+        .populate('group', 'name')
+        .sort({ createdAt: -1 });
     } else {
-      posts = await Post.find({ author: req.user._id });
+      posts = await Post.find({ author: req.user._id })
+        .populate('author', 'username')
+        .populate('likes', 'username')
+        .populate('comments.user', 'username')
+        .populate('group', 'name')
+        .sort({ createdAt: -1 });
     }
     res.json(posts);
   } catch (err) {
@@ -105,7 +120,12 @@ export const listPosts = async (req, res, next) => {
 export const searchPosts = async (req, res, next) => {
   try {
     const { q } = req.query;
-    const posts = await Post.find({ content: { $regex: q, $options: 'i' } });
+    const posts = await Post.find({ content: { $regex: q, $options: 'i' } })
+      .populate('author', 'username')
+      .populate('likes', 'username')
+      .populate('comments.user', 'username')
+      .populate('group', 'name')
+      .sort({ createdAt: -1 });
     res.json(posts);
   } catch (err) {
     next(err);

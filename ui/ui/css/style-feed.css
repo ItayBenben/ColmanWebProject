@@ -56,14 +56,114 @@ body {
 }
 
 .sidebar {
-  width: 16%;
-  min-width: 120px;
+  width: 25%;
+  min-width: 280px;
   margin-right: 1.2rem;
   font-size: 0.97rem;
 }
 
+/* Group list styling */
+#groupList {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    width: 100%;
+}
+
+/* Group item styling */
+.group-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px;
+    margin-bottom: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background-color: #f9f9f9;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.group-info {
+    flex: 1;
+}
+
+.group-name {
+    font-weight: bold;
+    margin-bottom: 4px;
+}
+
+.group-desc {
+    color: #666;
+    font-size: 0.9rem;
+    margin-bottom: 4px;
+}
+
+.admin-badge {
+    background-color: #28a745;
+    color: white;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 0.75rem;
+    margin-left: 8px;
+}
+
+.group-actions {
+    margin-left: 10px;
+}
+
+.view-group-btn {
+    background-color: #17a2b8;
+    color: white;
+    border: none;
+    padding: 0.3rem 0.6rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.75rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.view-group-btn:hover {
+    background-color: #138496;
+}
+
+/* Group filter message */
+.group-filter-message {
+    background-color: #e3f2fd;
+    border: 1px solid #2196f3;
+    border-radius: 6px;
+    padding: 0.75rem;
+    margin-bottom: 1rem;
+    text-align: center;
+}
+
+.filter-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.95rem;
+    color: #1976d2;
+}
+
+.show-all-btn {
+    background-color: #2196f3;
+    color: white;
+    border: none;
+    padding: 0.4rem 0.8rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: background-color 0.2s;
+}
+
+.show-all-btn:hover {
+    background-color: #1976d2;
+}
+
 .feed {
-  width: 84%;
+  width: 75%;
 }
 
 .feed button {
@@ -137,6 +237,37 @@ body {
   border-radius: 5px;
   margin-bottom: 0.3rem;
   font-size: 0.95rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.comment-content {
+  flex: 1;
+}
+
+.delete-comment-btn {
+  background: none;
+  border: none;
+  color: #dc3545;
+  cursor: pointer;
+  font-size: 1.2rem;
+  font-weight: bold;
+  padding: 0.1rem 0.3rem;
+  border-radius: 3px;
+  margin-left: 0.5rem;
+  transition: all 0.2s ease;
+  line-height: 1;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.delete-comment-btn:hover {
+  background-color: #dc3545;
+  color: white;
 }
 
 .comment-form {
@@ -186,6 +317,39 @@ body {
   width: 100%;
   max-width: 400px;
   position: relative;
+}
+
+.post-group-selection {
+  margin-bottom: 1rem;
+}
+
+.post-group-selection label {
+  display: block;
+  margin-bottom: 0.3rem;
+  font-weight: 500;
+  color: #4267b2;
+  font-size: 0.95rem;
+}
+
+.post-group-selection select {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 0.95rem;
+  background-color: white;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+
+.post-group-selection select:focus {
+  outline: none;
+  border-color: #4267b2;
+  box-shadow: 0 0 0 2px rgba(66, 103, 178, 0.1);
+}
+
+.post-group-selection select option {
+  padding: 0.5rem;
 }
 
 .modal-content textarea {
