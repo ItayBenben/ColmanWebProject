@@ -18,7 +18,10 @@ footer p {
   margin-bottom: 8px;
   font-weight: bold; /* Bold labels for clarity */
   color: #333;
+<<<<<<< HEAD
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+=======
+>>>>>>> d1f732eff242bb3f80720916b56766583347b89f
 }
 .form-group input {
   width: 100%;
@@ -40,7 +43,10 @@ footer p {
   border-radius: 4px;
   cursor: pointer;
   transition: background-color 0.3s;
+<<<<<<< HEAD
   
+=======
+>>>>>>> d1f732eff242bb3f80720916b56766583347b89f
 }
 .btn-login:hover {
   background-color: #28a745;

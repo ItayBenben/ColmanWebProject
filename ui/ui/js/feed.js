@@ -784,6 +784,7 @@ document.addEventListener("DOMContentLoaded", () => {
   console.log('Authentication successful, fetching feed and friends/groups');
   fetchFeed();
   fetchFriendsAndGroups();
+<<<<<<< HEAD
 });
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -830,4 +831,6 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   drawFace();
+=======
+>>>>>>> d1f732eff242bb3f80720916b56766583347b89f
 });
