@@ -79,7 +79,7 @@ Before running this project, make sure you have:
 
 ### 1. Clone the Repository
 ```bash
-git clone https://github.com/yourusername/ColmanWebProject.git
+git clone https://github.com/ItayBenben/ColmanWebProject.git
 cd ColmanWebProject
 ```
 
