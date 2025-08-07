@@ -707,6 +707,7 @@ function displaySearchResults(posts, users, query) {
         </div>
         <div class="user-actions">
           <button onclick="viewUserProfile('${user._id}')" class="view-profile-btn">View Profile</button>
+          <button onclick="addFriendFromSearch('${user._id}', '${user.username}')" class="add-friend-btn">Add Friend</button>
         </div>
       `;
       usersList.appendChild(userItem);
@@ -769,6 +770,7 @@ function displaySearchResultsWithUserPosts(posts, userPostsResults, query) {
         </div>
         <div class="user-actions">
           <button onclick="viewUserProfile('${user._id}')" class="view-profile-btn">View Profile</button>
+          <button onclick="addFriendFromSearch('${user._id}', '${user.username}')" class="add-friend-btn">Add Friend</button>
         </div>
       `;
       userSection.appendChild(userHeader);
@@ -809,6 +811,36 @@ function displaySearchResultsWithUserPosts(posts, userPostsResults, query) {
   }
 }
 
+// Add Friend Function
+async function addFriendFromSearch(userId, username) {
+  if (!checkAuth()) return;
+  
+  try {
+    const response = await fetch('http://localhost:5000/api/users/add-friend', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      credentials: 'include',
+      body: JSON.stringify({ userId })
+    });
+    
+    if (response.ok) {
+      const result = await response.json();
+      alert(`Successfully added ${username} as a friend!`);
+      console.log('Friend added:', result.message);
+    } else {
+      const errorData = await response.json();
+      console.error('Failed to add friend:', errorData.message || 'Unknown error');
+      alert('Failed to add friend: ' + (errorData.message || 'Unknown error'));
+    }
+  } catch (error) {
+    console.error('Error adding friend:', error);
+    alert('Error adding friend. Please try again.');
+  }
+}
+
 // Make functions globally accessible
 window.displaySearchResults = displaySearchResults;
 window.displaySearchResultsWithUserPosts = displaySearchResultsWithUserPosts;
@@ -817,6 +849,7 @@ window.viewGroupPosts = viewGroupPosts;
 window.showAllPosts = showAllPosts;
 window.deleteComment = deleteComment;
 window.likeComment = likeComment;
+window.addFriendFromSearch = addFriendFromSearch;
 
 document.addEventListener("DOMContentLoaded", () => {
   console.log('Feed page loaded');
