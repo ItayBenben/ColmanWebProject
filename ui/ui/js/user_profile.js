@@ -28,6 +28,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     const userId = profileUserId || currentUserId;
     if (userId) {
         await loadUserProfile(userId);
+        await loadStatistics('all'); // Load default statistics
 
     } else {
         console.log('No user ID available');
@@ -733,6 +734,75 @@ async function addFriendFromProfile(userId, username) {
     }
 }
 
+// Load User Statistics Function
+async function loadStatistics(period = 'all') {
+    if (!checkAuth()) return;
+    
+    const userId = profileUserId || currentUserId;
+    if (!userId) {
+        console.log('No user ID available for statistics');
+        return;
+    }
+    
+    try {
+        console.log(`Loading ${period} statistics for user ${userId}`);
+        
+        const response = await fetch(`http://localhost:5000/api/users/${userId}/statistics?period=${period}`, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            },
+            credentials: 'include'
+        });
+        
+        if (response.ok) {
+            const stats = await response.json();
+            displayStatistics(stats, period);
+        } else if (response.status === 403) {
+            // User doesn't have permission to view these stats
+            document.getElementById('statistics-content').innerHTML = 
+                '<p style="text-align: center; color: #666; padding: 2rem;">Statistics not available for this user</p>';
+            document.getElementById('stats-period-text').textContent = 'Access restricted';
+        } else {
+            console.error('Failed to load statistics');
+            document.getElementById('statistics-content').innerHTML = 
+                '<p style="text-align: center; color: #666; padding: 2rem;">Failed to load statistics</p>';
+        }
+    } catch (error) {
+        console.error('Error loading statistics:', error);
+        document.getElementById('statistics-content').innerHTML = 
+            '<p style="text-align: center; color: #666; padding: 2rem;">Error loading statistics</p>';
+    }
+}
+
+// Display Statistics Function
+function displayStatistics(stats, selectedPeriod) {
+    // Update the numbers
+    document.getElementById('stat-posts').textContent = stats.totalPosts || 0;
+    document.getElementById('stat-likes-received').textContent = stats.totalLikesReceived || 0;
+    document.getElementById('stat-likes-given').textContent = stats.likesGiven || 0;
+    document.getElementById('stat-comments-received').textContent = stats.totalCommentsReceived || 0;
+    document.getElementById('stat-comments-made').textContent = stats.commentsMade || 0;
+    document.getElementById('stat-friends').textContent = stats.friendsCount || 0;
+    document.getElementById('stat-groups').textContent = stats.groupsCount || 0;
+    
+    // Update period text
+    document.getElementById('stats-period-text').textContent = `Statistics for: ${stats.period}`;
+    
+    // Update active button
+    const allTimeBtn = document.getElementById('allTimeBtn');
+    const lastDayBtn = document.getElementById('lastDayBtn');
+    
+    if (selectedPeriod === 'all') {
+        allTimeBtn.classList.add('active');
+        lastDayBtn.classList.remove('active');
+    } else {
+        allTimeBtn.classList.remove('active');
+        lastDayBtn.classList.add('active');
+    }
+    
+    console.log('Statistics displayed:', stats);
+}
+
 // Make functions globally accessible
 window.deleteGroup = deleteGroup;
 window.leaveGroup = leaveGroup;
@@ -749,6 +819,7 @@ window.searchUsers = searchUsers;
 window.addMemberToGroup = addMemberToGroup;
 window.removeMember = removeMember;
 window.addFriendFromProfile = addFriendFromProfile;
+window.loadStatistics = loadStatistics;
 
 async function updateUserInfo(userId, updateData) {
     try {
