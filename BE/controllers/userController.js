@@ -155,4 +155,92 @@ export const blockUser = async (req, res, next) => {
   } catch (err) {
     next(err);
   }
+};
+
+export const getUserStatistics = async (req, res, next) => {
+  try {
+    const userId = req.params.id;
+    const { period = 'all' } = req.query; // 'day' or 'all'
+    
+    // Calculate date filter for last day
+    const oneDayAgo = new Date();
+    oneDayAgo.setDate(oneDayAgo.getDate() - 1);
+    
+    const dateFilter = period === 'day' ? { createdAt: { $gte: oneDayAgo } } : {};
+    
+    // Check if user exists
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    
+    // Only allow users to view their own detailed stats or friends' stats
+    const isOwnProfile = userId === req.user._id.toString();
+    const isFriend = req.user.friends.includes(userId);
+    
+    if (!isOwnProfile && !isFriend) {
+      return res.status(403).json({ message: 'Access denied' });
+    }
+    
+    // Get user's posts with date filter
+    const userPosts = await Post.find({ 
+      author: userId,
+      ...dateFilter 
+    });
+    
+    // Count total posts
+    const totalPosts = userPosts.length;
+    
+    // Count total likes received on user's posts
+    const totalLikesReceived = userPosts.reduce((sum, post) => sum + (post.likes?.length || 0), 0);
+    
+    // Count total comments on user's posts
+    const totalCommentsReceived = userPosts.reduce((sum, post) => sum + (post.comments?.length || 0), 0);
+    
+    // Count comments made by user (on any posts)
+    const allPosts = await Post.find({});
+    let commentsMade = 0;
+    
+    allPosts.forEach(post => {
+      if (post.comments) {
+        const userComments = post.comments.filter(comment => 
+          comment.user && comment.user.toString() === userId &&
+          (period === 'all' || new Date(comment.createdAt) >= oneDayAgo)
+        );
+        commentsMade += userComments.length;
+      }
+    });
+    
+    // Count likes given by user
+    let likesGiven = 0;
+    if (period === 'day') {
+      // For last day, we need to check when likes were added (this is tricky without timestamps on likes)
+      // For now, we'll count all likes given as it's hard to track when individual likes were added
+      const postsLikedByUser = await Post.find({ likes: userId });
+      likesGiven = postsLikedByUser.length;
+    } else {
+      const postsLikedByUser = await Post.find({ likes: userId });
+      likesGiven = postsLikedByUser.length;
+    }
+    
+    // Get basic user info (friends, groups)
+    const friendsCount = user.friends?.length || 0;
+    const groupsCount = user.groups?.length || 0;
+    
+    const statistics = {
+      period: period === 'day' ? 'Last 24 Hours' : 'All Time',
+      totalPosts,
+      totalLikesReceived,
+      totalCommentsReceived,
+      commentsMade,
+      likesGiven,
+      friendsCount, // These don't change with time filter
+      groupsCount   // These don't change with time filter
+    };
+    
+    res.json(statistics);
+  } catch (err) {
+    console.error('Error fetching user statistics:', err);
+    next(err);
+  }
 }; 

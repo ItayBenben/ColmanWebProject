@@ -41,10 +41,51 @@
                         <p><strong>Age:</strong> <span id="user-age"></span></p>
                         <p><strong>Gender:</strong> <span id="user-gender"></span></p>
                         <p><strong>Home Address:</strong> <span id="user-location"></span></p>
-                        <span id="user-location"></span>
-        </p>
-        <div id="map" ></div>
-        </div>
+                        <div id="map" ></div>
+                    </div>
+                </div>
+                
+                <!-- User Statistics Section -->
+                <div class="statistics-section">
+                    <div class="stats-header">
+                        <h3>User Statistics</h3>
+                        <div class="time-filter">
+                            <button id="allTimeBtn" class="time-filter-btn active" onclick="loadStatistics('all')">All Time</button>
+                            <button id="lastDayBtn" class="time-filter-btn" onclick="loadStatistics('day')">Last 24 Hours</button>
+                        </div>
+                    </div>
+                    <div id="statistics-content" class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-number" id="stat-posts">-</div>
+                            <div class="stat-label">Posts</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number" id="stat-likes-received">-</div>
+                            <div class="stat-label">Likes Received</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number" id="stat-likes-given">-</div>
+                            <div class="stat-label">Likes Given</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number" id="stat-comments-received">-</div>
+                            <div class="stat-label">Comments Received</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number" id="stat-comments-made">-</div>
+                            <div class="stat-label">Comments Made</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number" id="stat-friends">-</div>
+                            <div class="stat-label">Friends</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number" id="stat-groups">-</div>
+                            <div class="stat-label">Groups</div>
+                        </div>
+                    </div>
+                    <div class="stats-period">
+                        <small id="stats-period-text">Loading statistics...</small>
                     </div>
                 </div>
             </div>
