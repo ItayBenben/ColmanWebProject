@@ -394,36 +394,7 @@ async function deletePost(postId) {
   }
 }
 
-async function deleteComment(postId, commentId) {
-  if (!checkAuth()) return;
-  
-  // Confirm deletion
-  if (!confirm('Are you sure you want to delete this comment?')) {
-    return;
-  }
-  
-  try {
-    const response = await fetch(`http://localhost:5000/api/posts/${postId}/comments/${commentId}`, {
-      method: "DELETE",
-      headers: {
-        "Authorization": `Bearer ${token}`
-      },
-      credentials: 'include'
-    });
-    
-    if (response.ok) {
-      console.log('Comment deleted successfully');
-      fetchFeed(); // Refresh feed to show updated comments
-    } else {
-      const errorData = await response.json();
-      console.error('Failed to delete comment:', errorData.message || 'Unknown error');
-      alert('Failed to delete comment: ' + (errorData.message || 'Unknown error'));
-    }
-  } catch (error) {
-    console.error('Error deleting comment:', error);
-    alert('Error deleting comment. Please try again.');
-  }
-}
+
 
 async function fetchFriendsAndGroups() {
   if (!checkAuth()) return;
