@@ -785,3 +785,49 @@ document.addEventListener("DOMContentLoaded", () => {
   fetchFeed();
   fetchFriendsAndGroups();
 });
+
+document.addEventListener("DOMContentLoaded", () => {
+  const canvas = document.getElementById("funnyCanvas");
+  if (!canvas) return; // prevent error if canvas doesn't exist on some pages
+
+  const ctx = canvas.getContext("2d");
+
+  let x = 20, y = 20;
+  let dx = 2, dy = 2;
+  const faceRadius = 20;
+
+  function drawFace() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Face
+    ctx.beginPath();
+    ctx.arc(x, y, faceRadius, 0, Math.PI * 2);
+    ctx.fillStyle = "#ffcc00";
+    ctx.fill();
+    ctx.closePath();
+
+    // Eyes
+    ctx.beginPath();
+    ctx.arc(x - 7, y - 5, 3, 0, Math.PI * 2);
+    ctx.arc(x + 7, y - 5, 3, 0, Math.PI * 2);
+    ctx.fillStyle = "#000";
+    ctx.fill();
+
+    // Mouth (smile)
+    ctx.beginPath();
+    ctx.arc(x, y + 5, 7, 0, Math.PI);
+    ctx.strokeStyle = "#000";
+    ctx.stroke();
+
+    // Movement logic
+    if (x + dx > canvas.width - faceRadius || x + dx < faceRadius) dx = -dx;
+    if (y + dy > canvas.height - faceRadius || y + dy < faceRadius) dy = -dy;
+
+    x += dx;
+    y += dy;
+
+    requestAnimationFrame(drawFace);
+  }
+
+  drawFace();
+});
