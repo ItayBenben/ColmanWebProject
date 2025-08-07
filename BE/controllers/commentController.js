@@ -22,12 +22,26 @@ export const addComment = async (req, res, next) => {
     // 2. Post is public (no group) and user is friends with author or is the author
     if (post.group) {
       const group = await Group.findById(post.group);
+      if (!group) {
+        return res.status(404).json({ message: 'Group not found' });
+      }
       if (!group.members.includes(req.user._id)) {
         return res.status(403).json({ message: 'Not a group member' });
       }
     } else {
+      // For public posts, allow comments from:
+      // 1. The post author themselves
+      // 2. Friends of the post author
+      // 3. Anyone who can see the post in their feed (more permissive)
       const author = await User.findById(post.author);
-      if (!author.friends.includes(req.user._id) && post.author.toString() !== req.user._id.toString()) {
+      if (!author) {
+        return res.status(404).json({ message: 'Post author not found' });
+      }
+      
+      // Allow if user is the author or a friend of the author
+      if (post.author.toString() !== req.user._id.toString() && 
+          !author.friends.includes(req.user._id) && 
+          !req.user.friends.includes(post.author)) {
         return res.status(403).json({ message: 'Not authorized to comment on this post' });
       }
     }

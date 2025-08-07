@@ -4,13 +4,13 @@ import { createPost, getPost, updatePost, deletePost, listPosts, searchPosts, gr
 
 const router = express.Router();
 
-router.post('/', auth, createPost);
-router.get('/:postId', auth, getPost);
-router.put('/:postId', auth, updatePost);
-router.delete('/:postId', auth, deletePost);
-router.get('/', auth, listPosts);
 router.get('/search', auth, searchPosts);
-router.get('/groupby/group', auth, groupByGroup);
-router.get('/groupby/user', auth, groupByUser);
+router.get('/', auth, listPosts);
+router.post('/', auth, createPost);
+router.get('/:id', auth, getPost);
+router.put('/:id', auth, updatePost);
+router.delete('/:id', auth, deletePost);
+router.get('/group/:groupId', auth, groupByGroup);
+router.get('/user/:userId', auth, groupByUser);
 
 export default router; 
