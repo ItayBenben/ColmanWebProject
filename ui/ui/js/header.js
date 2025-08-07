@@ -93,11 +93,27 @@ function loadStockWidget() {
 
 // Logout function
 function logout() {
+    console.log('Logging out user...');
+    
+    // Clear all cookies
     document.cookie = 'username=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
     document.cookie = 'isAdmin=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
     document.cookie = 'jwt=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+    document.cookie = 'userId=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+    
+    // Clear localStorage
+    localStorage.removeItem('jwt');
+    localStorage.removeItem('userId');
+    localStorage.removeItem('username');
     localStorage.clear();
-    window.location.href = 'login.html';
+    
+    // Clear sessionStorage as well
+    sessionStorage.clear();
+    
+    console.log('All authentication data cleared, redirecting to login');
+    
+    // Force redirect to login page
+    window.location.replace('login.html');
 }
 
 // Render header and THEN load stock widget

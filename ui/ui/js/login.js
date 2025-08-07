@@ -4,7 +4,26 @@ function getCookie(name) {
     if (parts.length === 2) return parts.pop().split(';').shift();
 }
 
+// Check if user is already authenticated and redirect to feed
+function checkIfAlreadyLoggedIn() {
+    const token = localStorage.getItem('jwt');
+    const userId = localStorage.getItem('userId');
+    const username = localStorage.getItem('username');
+    
+    if (token && userId && username) {
+        console.log('User already logged in, redirecting to feed');
+        window.location.href = 'feed.html';
+        return true;
+    }
+    return false;
+}
+
 $(document).ready(function () {
+    // Check if user is already authenticated
+    if (checkIfAlreadyLoggedIn()) {
+        return;
+    }
+
     const loginForm = $('#login-form');
     const messageElement = $('#login-message');
     const loginButton = $('button[type="submit"]');
