@@ -95,16 +95,8 @@ export const listPosts = async (req, res, next) => {
         .populate('group', 'name')
         .sort({ createdAt: -1 });
     } else if (req.query.userId) {
-      if (req.query.userId !== req.user._id.toString() && !req.user.friends.includes(req.query.userId)) {
-        return res.status(403).json({ message: 'Not a friend' });
-      }
-      posts = await Post.find({ author: req.query.userId })
-        .populate('author', 'username')
-        .populate('likes', 'username')
-        .populate('comments.user', 'username')
-        .populate('comments.likes', 'username')
-        .populate('group', 'name')
-        .sort({ createdAt: -1 });
+      // Get authorized posts for a specific user
+      posts = await getAuthorizedUserPosts(req.query.userId, req.user._id);
     } else {
       posts = await Post.find({ author: req.user._id })
         .populate('author', 'username')
@@ -119,6 +111,64 @@ export const listPosts = async (req, res, next) => {
     next(err);
   }
 };
+
+// Helper function to get authorized posts for a user
+async function getAuthorizedUserPosts(targetUserId, currentUserId) {
+  // If viewing own posts, show all
+  if (targetUserId.toString() === currentUserId.toString()) {
+    return await Post.find({ author: targetUserId })
+      .populate('author', 'username')
+      .populate('likes', 'username')
+      .populate('comments.user', 'username')
+      .populate('comments.likes', 'username')
+      .populate('group', 'name')
+      .sort({ createdAt: -1 });
+  }
+
+  // Get current user's groups and friends
+  const currentUser = await User.findById(currentUserId);
+  const userGroups = currentUser.groups || [];
+  const userFriends = currentUser.friends || [];
+
+  // Check if target user is a friend
+  const isFriend = userFriends.includes(targetUserId);
+
+  // Build query for authorized posts
+  const authorizedPosts = [];
+
+  // Get posts by target user
+  const targetUserPosts = await Post.find({ author: targetUserId })
+    .populate('author', 'username')
+    .populate('likes', 'username')
+    .populate('comments.user', 'username')
+    .populate('comments.likes', 'username')
+    .populate('group', 'name')
+    .sort({ createdAt: -1 });
+
+  // Filter posts based on authorization
+  for (const post of targetUserPosts) {
+    let isAuthorized = false;
+
+    // Own posts are always authorized
+    if (post.author._id.toString() === currentUserId.toString()) {
+      isAuthorized = true;
+    }
+    // Public posts (no group) are authorized if friends
+    else if (!post.group && isFriend) {
+      isAuthorized = true;
+    }
+    // Group posts are authorized if both users are in the same group
+    else if (post.group && userGroups.includes(post.group._id)) {
+      isAuthorized = true;
+    }
+
+    if (isAuthorized) {
+      authorizedPosts.push(post);
+    }
+  }
+
+  return authorizedPosts;
+}
 
 export const searchPosts = async (req, res, next) => {
   try {
