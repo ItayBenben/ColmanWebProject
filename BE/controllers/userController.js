@@ -86,12 +86,41 @@ export const addFriend = async (req, res, next) => {
   try {
     const { userId } = req.body;
     if (userId === req.user._id.toString()) return res.status(400).json({ message: 'Cannot friend yourself' });
-    const user = await User.findById(userId);
-    if (!user) return res.status(404).json({ message: 'User not found' });
-    if (user.friends.includes(req.user._id)) return res.status(400).json({ message: 'Already friends' });
-    user.friends.push(req.user._id);
-    await user.save();
-    res.json({ message: 'Friend added' });
+    
+    const targetUser = await User.findById(userId);
+    if (!targetUser) return res.status(404).json({ message: 'User not found' });
+    
+    const currentUser = await User.findById(req.user._id);
+    if (!currentUser) return res.status(404).json({ message: 'Current user not found' });
+    
+    // Check if already friends
+    if (currentUser.friends.includes(userId)) return res.status(400).json({ message: 'Already friends' });
+    if (targetUser.friends.includes(req.user._id)) return res.status(400).json({ message: 'Already friends' });
+    
+    // Check if user is blocked
+    if (currentUser.blockedUsers.includes(userId) || targetUser.blockedUsers.includes(req.user._id)) {
+      return res.status(403).json({ message: 'Cannot add blocked user as friend' });
+    }
+    
+    // Add mutual friendship - both users become friends
+    currentUser.friends.push(userId);
+    targetUser.friends.push(req.user._id);
+    
+    // Remove any existing friend requests between users
+    currentUser.friendRequests = currentUser.friendRequests.filter(id => id.toString() !== userId);
+    targetUser.friendRequests = targetUser.friendRequests.filter(id => id.toString() !== req.user._id.toString());
+    
+    await currentUser.save();
+    await targetUser.save();
+    
+    res.json({ 
+      message: 'Friend added successfully',
+      friend: {
+        _id: targetUser._id,
+        username: targetUser.username,
+        email: targetUser.email
+      }
+    });
   } catch (err) {
     next(err);
   }

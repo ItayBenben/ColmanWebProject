@@ -119,8 +119,11 @@ document.addEventListener('DOMContentLoaded', async function() {
             users.forEach(user => {
                 const userDiv = $(`
                     <div class="search-result-item">
-                        <span class="search-name" data-id="${user._id}" data-type="user">${user.username}</span>
-                        <small>${user.email || ''}</small>
+                        <div class="user-result-info">
+                            <span class="search-name" data-id="${user._id}" data-type="user">${user.username}</span>
+                            <small>${user.email || ''}</small>
+                        </div>
+                        <button onclick="addFriendFromProfile('${user._id}', '${user.username}')" class="add-friend-btn">Add Friend</button>
                     </div>
                 `);
                 resultsDiv.append(userDiv);
@@ -691,6 +694,45 @@ async function removeMember(userId) {
     }
 }
 
+// Add Friend Function
+async function addFriendFromProfile(userId, username) {
+    if (!checkAuth()) return;
+    
+    try {
+        const response = await fetch('http://localhost:5000/api/users/add-friend', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            credentials: 'include',
+            body: JSON.stringify({ userId })
+        });
+        
+        if (response.ok) {
+            const result = await response.json();
+            alert(`Successfully added ${username} as a friend!`);
+            console.log('Friend added:', result.message);
+            
+            // Close the search popup after successful friend addition
+            $('#search-popup').addClass('hidden');
+            
+            // Optionally reload the user profile to show updated friends list
+            const currentProfileUserId = profileUserId || currentUserId;
+            if (currentProfileUserId === currentUserId) {
+                await loadUserProfile(currentUserId);
+            }
+        } else {
+            const errorData = await response.json();
+            console.error('Failed to add friend:', errorData.message || 'Unknown error');
+            alert('Failed to add friend: ' + (errorData.message || 'Unknown error'));
+        }
+    } catch (error) {
+        console.error('Error adding friend:', error);
+        alert('Error adding friend. Please try again.');
+    }
+}
+
 // Make functions globally accessible
 window.deleteGroup = deleteGroup;
 window.leaveGroup = leaveGroup;
@@ -706,6 +748,7 @@ window.manageMembers = manageMembers;
 window.searchUsers = searchUsers;
 window.addMemberToGroup = addMemberToGroup;
 window.removeMember = removeMember;
+window.addFriendFromProfile = addFriendFromProfile;
 
 async function updateUserInfo(userId, updateData) {
     try {
