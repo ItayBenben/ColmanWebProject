@@ -25,10 +25,16 @@ $(document).ready(function () {
             data: JSON.stringify({ "fb": post }),
             xhrFields: { withCredentials: true },
             success: function (result) {
-                console.log('fb post posted:', result);
+                console.log('Facebook post result:', result);
+                if (result.facebookConfigured === false) {
+                    console.log('Facebook integration not configured - post skipped');
+                } else {
+                    console.log('Facebook post posted successfully');
+                }
             },
             error: function (error) {
-                console.error('Error posting on fb:', error);
+                console.error('Error posting on Facebook:', error);
+                // Don't block registration if Facebook posting fails
             }
         });
     }
@@ -61,7 +67,7 @@ $(document).ready(function () {
                     localStorage.setItem('username', data.user.username);
                 }
                 
-                // postFB(`A new member has joined us! Welcome ${username}!`);
+                postFB(`A new member has joined us! Welcome ${username}!`);
                 window.location.href = 'login.html';
             },
             error: function (jqXHR) {
