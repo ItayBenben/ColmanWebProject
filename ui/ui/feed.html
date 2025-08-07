@@ -11,10 +11,20 @@
   <div id="header-container"></div>
   
   <div id="search-container">
-  <input type="text" id="search-input" placeholder="Search posts...">
-  <button id="search-button">🔍</button>
-  <button id="clear-search-button" onclick="clearSearch()" style="margin-left: 5px;">Clear</button>
-</div>
+    <div class="search-input-group">
+      <input type="text" id="search-input" placeholder="Search posts and users...">
+      <button id="search-button">🔍</button>
+      <button id="clear-search-button" onclick="clearSearch()" style="margin-left: 5px;">Clear</button>
+    </div>
+    <div class="search-options">
+      <label class="search-option">
+        <input type="checkbox" id="search-posts" checked> Posts
+      </label>
+      <label class="search-option">
+        <input type="checkbox" id="search-users" checked> Users
+      </label>
+    </div>
+  </div>
   <div class="container">
     <aside class="sidebar">
       <h2>Friends</h2>
